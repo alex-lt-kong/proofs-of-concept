@@ -59,9 +59,7 @@ int main(int argc, char** argv)
     }
 
     String fd_modelPath = parser.get<String>("fd_model");
-    String fr_modelPath = parser.get<String>("fr_model");
     cout << "fd_modelPath: " << fd_modelPath << endl;
-    cout << "fr_modelPath: " << fr_modelPath << endl;
 
     float scoreThreshold = parser.get<float>("score_threshold");
     float nmsThreshold = parser.get<float>("nms_threshold");
@@ -70,8 +68,6 @@ int main(int argc, char** argv)
     bool save = parser.get<bool>("save");
     float scale = parser.get<float>("scale");
 
-    double cosine_similar_thresh = 0.363;
-    double l2norm_similar_thresh = 1.128;
 
     //! [initialize_FaceDetectorYN]
     // Initialize FaceDetectorYN
