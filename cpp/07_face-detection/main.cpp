@@ -138,7 +138,7 @@ int main(int argc, char **argv) {
   detector->setInputSize(Size(frameWidth, frameHeight));
   VideoWriter writer;
   if (outputVideo.length() > 0) {
-    writer = VideoWriter(outputVideo, VideoWriter::fourcc('M', 'P', '4', 'V'),
+    writer = VideoWriter(outputVideo, VideoWriter::fourcc('H', '2', '6', '4'),
                          30, Size(frameWidth, frameHeight));
   }
 
