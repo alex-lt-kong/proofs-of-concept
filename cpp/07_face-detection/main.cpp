@@ -163,9 +163,9 @@ int main(int argc, char **argv) {
     visualize(result, nFrame, faces, tm.getFPS());
 
     // Visualize results
-    imshow("Live", result);
+    // imshow("Live", result);
 
-    int key = waitKey(1);
+    // int key = waitKey(1);
 
     if (outputVideo.length() > 0)
       writer.write(result);
