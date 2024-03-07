@@ -2,7 +2,7 @@ CC = gcc
 CXX = g++
 LDFLAGS = -L ~/.local/lib/ -lopencv_core -lopencv_videoio -lopencv_imgcodecs -lopencv_highgui -lopencv_objdetect
 CFLAGS = -O2 -Wall -pedantic -Wextra -Wl,--copy-dt-needed-entries
-INC = -I ~/.local/include/opencv4/
+INC = -I ~/.local/include/opencv4/ -I /usr/local/include/opencv4/
 
 TARGETS = main
 # Directory to store the built targets
