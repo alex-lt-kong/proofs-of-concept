@@ -1,5 +1,6 @@
 // https://docs.opencv.org/4.x/d0/dd4/tutorial_dnn_face.html
 
+#include <filesystem>
 #include <iostream>
 #include <signal.h>
 #include <stdlib.h>
@@ -89,11 +90,12 @@ static void visualize(Mat &input, int frame, Mat &faces, double fps,
 int main(int argc, char **argv) {
   install_signal_handler();
   if (argc < 2 || argc > 3) {
+    cout << "OpenCV's build information:\n"
+         << cv::getBuildInformation() << "\n";
     cerr << "Usage: " << argv[0] << " <inputVideoPath> [outputVideoPath]"
          << endl;
     return EXIT_FAILURE;
   }
-  cout << "OpenCV's build information:\n" << cv::getBuildInformation() << "\n";
 
   /// Model parameters
   // the threshold to filter out bounding boxes of score smaller than the given
@@ -106,9 +108,12 @@ int main(int argc, char **argv) {
   /// Model parameters
 
   // Initialize FaceDetectorYN
+  filesystem::path binary_path(argv[0]);
+  filesystem::path model_path =
+      binary_path.parent_path() / "face_detection_yunet_2023mar.onnx";
+  cout << model_path << endl;
   Ptr<FaceDetectorYN> detector = FaceDetectorYN::create(
-      "./face_detection_yunet_2023mar.onnx", "", Size(1920, 1080),
-      scoreThreshold, nmsThreshold, topK);
+      model_path, "", Size(1920, 1080), scoreThreshold, nmsThreshold, topK);
 
   TickMeter tm;
 

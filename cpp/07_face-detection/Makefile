@@ -15,6 +15,7 @@ all: $(TARGET_PATHS)
 
 $(BUILD_DIR)/%: %.cpp
 	@mkdir -p $(BUILD_DIR)
+	cp ./face_detection_yunet_2023mar.onnx $(BUILD_DIR)
 	$(CXX) $(INC) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 .PHONY: clean
