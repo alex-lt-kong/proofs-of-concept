@@ -17,13 +17,14 @@ add_library(
     SHARED
     rand.c
 )
+add_library(rand_static STATIC rand.c)
 
 add_executable(mkl-dot-product mkl-dot-product.cpp)
 target_link_libraries(mkl-dot-product  
-  rand
+  rand_static
   MKL::MKL
 )
 
 add_executable(my-dot-product my-dot-product.cpp)
-target_link_libraries(my-dot-product rand)
+target_link_libraries(my-dot-product rand_static)
 

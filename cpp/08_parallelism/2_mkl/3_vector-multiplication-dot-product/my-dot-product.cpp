@@ -41,7 +41,7 @@ double jobs_dispatcher(const double *vec_a, const double *vec_b,
   thread_count = thread_count > cpu_count ? cpu_count : thread_count;
   if (thread_count == 0)
     thread_count = 1;
-  double sums[thread_count + 1];
+  auto sums = new double[thread_count+1];
   for (size_t i = 0; i < thread_count; ++i) {
     sums[i] = 0;
     threads.emplace_back(thread(dot_product_job, (vec_a), (vec_b),
@@ -64,6 +64,7 @@ double jobs_dispatcher(const double *vec_a, const double *vec_b,
   for (size_t i = 0; i < thread_count; ++i) {
     sum += sums[i];
   }
+  delete[] sums;
   return sum;
 }
 
@@ -77,14 +78,14 @@ int main(int argc, char *argv[]) {
     exp = 5;
   cout << "exp,vector_size,result,takes(ms)\n";
   for (int e = 0; e < exp; ++e) {
-    long arr_size = pow(base, e);
+    size_t arr_size = pow(base, e);
     cout << fixed << setw(3) << e << ", " << setw(15) << arr_size << ", ";
     vector<double> vec_a;
     vector<double> vec_b;
-    for (long i = 0; i < arr_size; ++i) {
+    for (size_t i = 0; i < arr_size; ++i) {
       vec_a.push_back(get_random_0_to_1());
     }
-    for (long i = 0; i < arr_size; ++i) {
+    for (size_t i = 0; i < arr_size; ++i) {
       vec_b.push_back(get_random_0_to_1());
     }
 
