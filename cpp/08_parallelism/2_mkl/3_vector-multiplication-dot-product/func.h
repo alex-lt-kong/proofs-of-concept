@@ -16,19 +16,18 @@ struct JobPayload {
   int64_t offset;
 };
 
-inline 
+inline
 #ifdef _WIN32
-DWORD
+    DWORD
 #else
-long
+    long
 #endif
-get_cpu_cores() {                                                                
+    get_cpu_cores() {
 #ifdef _WIN32
   SYSTEM_INFO sysInfo;
   GetSystemInfo(&sysInfo);
   return sysInfo.dwNumberOfProcessors;
 #else
-  return sysconf(_SC_NPROCESSORS_ONLN);
+  return 0;
 #endif
 }
-

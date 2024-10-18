@@ -3,15 +3,15 @@
 
 #include <mkl.h>
 
-typedef void (*MathJob)(void*);
+typedef void (*MathJob)(void *);
 
 // extern uint64_t get_timestamp_in_microsec();
 
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
-double mkl_dot_product(double *restrict vec_a, double *restrict vec_b,
-                       double *restrict sum, int64_t arr_size) {
+    double mkl_dot_product(double *restrict vec_a, double *restrict vec_b,
+                           double *restrict sum, int64_t arr_size) {
   uint64_t t0, t1;
   t0 = get_timestamp_in_microsec();
   // https://www.intel.com/content/www/us/en/develop/documentation/onemkl-developer-reference-c/top/blas-and-sparse-blas-routines/blas-routines/blas-level-1-routines-and-functions/cblas-dot.html
@@ -36,8 +36,8 @@ void *_my_dot_product_job(void *payload) {
   return NULL;
 }
 
-double jobs_dispatcher(double *vec_a, double *vec_b, double *sum, int64_t arr_size,
-                  MathJob job_func) {
+double jobs_dispatcher(double *vec_a, double *vec_b, double *sum,
+                       int64_t arr_size, MathJob job_func) {
   uint64_t t0, t1;
   t0 = get_timestamp_in_microsec();
   *sum = 0;
@@ -61,54 +61,56 @@ double jobs_dispatcher(double *vec_a, double *vec_b, double *sum, int64_t arr_si
     if (cpu_count <= 0) {
       cpu_count = 4;
       fprintf(stderr, "get_cpu_cores() failed, default to %lu\n", cpu_count);
-	 } 
-	thread_count = thread_count > cpu_count ? cpu_count : thread_count;
-    struct JobPayload *payloads = malloc(thread_count * sizeof(struct JobPayload));
+    }
+    thread_count = thread_count > cpu_count ? cpu_count : thread_count;
+    struct JobPayload *payloads =
+        malloc(thread_count * sizeof(struct JobPayload));
     if (payloads == NULL) {
       fprintf(stderr, "malloc() failed\n");
       return -1;
     }
-	#ifdef _WIN32
-	HANDLE *tids = malloc(thread_count * sizeof(HANDLE));
-	#else
+#ifdef _WIN32
+    HANDLE *tids = malloc(thread_count * sizeof(HANDLE));
+#else
     pthread_t *tids = malloc(thread_count * sizeof(pthread_t));
-	#endif
-	if (tids == NULL) {
-		fprintf(stderr, "malloc() failed\n");
-		free(payloads);
-		return -1;
-	}
+#endif
+    if (tids == NULL) {
+      fprintf(stderr, "malloc() failed\n");
+      free(payloads);
+      return -1;
+    }
 
-	for (int i = 0; i < thread_count; ++i) {
-		payloads[i].vec_a = vec_a;
-		payloads[i].vec_b = vec_b;
-		payloads[i].sum = 0;
-		payloads[i].arr_size = arr_size / thread_count;
-		payloads[i].offset = arr_size / thread_count * i;
-	}
-	
-	for (int i = 0; i < thread_count; ++i) {
-	#ifdef _WIN32
-          tids[i] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)job_func, (void *)&payloads[i], 0, NULL);
-	#else
-		// takes < 100 us to pthread_create() a thread
-          pthread_create(&tids[i], NULL, job_func, (void *)&payloads[i]); 
-	#endif
-	}
-	
-	for (int i = 0; i < thread_count; ++i) {
-		#ifdef _WIN32
-		WaitForSingleObject(tids[i], INFINITE);
-		#else
-		pthread_join(tids[i], NULL);
-		#endif
-	}
-	*sum = 0;
-	for (int i = 0; i < thread_count; ++i){
-		*sum += payloads[i].sum;
-	}
-	free(payloads);
-	free(tids);
+    for (int i = 0; i < thread_count; ++i) {
+      payloads[i].vec_a = vec_a;
+      payloads[i].vec_b = vec_b;
+      payloads[i].sum = 0;
+      payloads[i].arr_size = arr_size / thread_count;
+      payloads[i].offset = arr_size / thread_count * i;
+    }
+
+    for (int i = 0; i < thread_count; ++i) {
+#ifdef _WIN32
+      tids[i] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)job_func,
+                             (void *)&payloads[i], 0, NULL);
+#else
+      // takes < 100 us to pthread_create() a thread
+      pthread_create(&tids[i], NULL, (void *)job_func, (void *)&payloads[i]);
+#endif
+    }
+
+    for (int i = 0; i < thread_count; ++i) {
+#ifdef _WIN32
+      WaitForSingleObject(tids[i], INFINITE);
+#else
+      pthread_join(tids[i], NULL);
+#endif
+    }
+    *sum = 0;
+    for (int i = 0; i < thread_count; ++i) {
+      *sum += payloads[i].sum;
+    }
+    free(payloads);
+    free(tids);
   }
   t1 = get_timestamp_in_microsec();
   return (t1 - t0) / 1000.0;
@@ -119,5 +121,6 @@ __declspec(dllexport)
 #endif
     double my_dot_product(double *vec_a, double *vec_b, double *sum,
                           int64_t arr_size) {
-  return jobs_dispatcher(vec_a, vec_b, sum, arr_size, _my_dot_product_job);
+  return jobs_dispatcher(vec_a, vec_b, sum, arr_size,
+                         (void *)_my_dot_product_job);
 }
