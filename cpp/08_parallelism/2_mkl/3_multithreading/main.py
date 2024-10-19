@@ -20,7 +20,7 @@ if exp <= 0:
     exp = 5
 
 base = 2
-print("exp,vector_size,result,takes(ms)")
+print("exp,vector_size,result,takes(ms),result,takes(ms)")
 for e in range(exp):
   arr_size = base ** e
   print(f"{e:3},{arr_size:15}, ", end='')
@@ -28,11 +28,21 @@ for e in range(exp):
   vec_b = np.empty((arr_size,))
   for i in range(arr_size):
     vec_a[i] = func.get_random_0_to_1()
-  for i in range(arr_size):
     vec_b[i] = func.get_random_0_to_1()
   
   t0 = time.time()
   result = np.dot(vec_a, vec_b)
   t1 = time.time()
-  print(f'result: {result:15.5f}, {(t1 - t0) * 1000:10,.2f}')
+  print(f'{result:15.5f}, {(t1 - t0) * 1000:10,.2f}', end='')
+
+  t0 = time.time()
+  result = np.power(vec_a, vec_b).sum()
+  t1 = time.time()
+  print(f'{result:15.5f}, {(t1 - t0) * 1000:10,.2f}', end='')
+
+  t0 = time.time()
+  result = (np.log(vec_a) / np.log(vec_b)).sum()
+  t1 = time.time()    
+  print(f'{result:20.5f}, {(t1 - t0) * 1000:10,.2f}')
+  
 
