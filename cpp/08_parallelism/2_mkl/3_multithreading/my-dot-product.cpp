@@ -11,7 +11,7 @@
 
 using namespace std;
 
-static ssize_t cpu_count = -1;
+static int cpu_count = -1;
 
 typedef void (*MathFunc)(const double *, const double *, size_t, long,
                          double *);
@@ -75,13 +75,13 @@ double jobs_dispatcher(MathFunc job_func, const double *vec_a,
                        const double *vec_b, int64_t arr_size) {
   double sum = 0;
 
-  ssize_t thread_count = ceil(arr_size / 1000.0 / 1000.0);
+  int thread_count = ceil(arr_size / 1000.0 / 1000.0);
   query_cpu_count();
   thread_count = thread_count > cpu_count ? cpu_count : thread_count;
   unique_ptr<double[]> sums(new double[thread_count + 1]);
   vector<thread> threads;
   threads.reserve(thread_count);
-  for (ssize_t i = 0; i < thread_count; ++i) {
+  for (int i = 0; i < thread_count; ++i) {
     sums[i] = 0;
     threads.emplace_back(thread(job_func, (vec_a), (vec_b),
                                 arr_size / thread_count,

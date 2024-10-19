@@ -6,7 +6,7 @@ import sys
 import time
 
 if sys.platform == 'win32':
-  lib_file = "./build/Release/func.dll"
+  lib_file = "./build/Release/rand.dll"
 else:
   lib_file = "./build/librand.so"
 func = CDLL(lib_file)
