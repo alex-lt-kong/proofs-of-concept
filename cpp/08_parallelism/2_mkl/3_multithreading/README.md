@@ -1,56 +1,163 @@
 # Compute a vector-vector dot product.
 
-* It is very likely that the dot product calculation is memory-bound--given the size of the data and the predictable
-pattern, prefetchers/caching should have already been fully operational. Perhaps we are
-approaching the hard limit of memory bandwidth.
-  * A useful [reference](https://stackoverflow.com/questions/18159455/why-vectorizing-the-loop-does-not-have-performance-improvement/18159503#18159503)
+- It is very likely that the dot product calculation is memory-bound--given the size of the data and the predictable
+  pattern, prefetchers/caching should have already been fully operational. Perhaps we are
+  approaching the hard limit of memory bandwidth.
+  - A useful [reference](https://stackoverflow.com/questions/18159455/why-vectorizing-the-loop-does-not-have-performance-improvement/18159503#18159503)
 
 ## Results
+
 ```
->>> py main.py 
-Generating two vectors, each with 0.1K random doubles...
-numpy:             product = 23.07125, takes 0.04 (ms, per Python) / NA    (ms, per C)
-mkl_dot_product(): product = 23.07125, takes 2.65 (ms, per Python) / 2.59 (ms, per C)
-my_dot_product():  product = 23.07125, takes 0.05 (ms, per Python) / 0.00 (ms, per C)
+lscpu
 
-Generating two vectors, each with 1.0K random doubles...
-numpy:             product = 245.19251, takes 0.02 (ms, per Python) / NA    (ms, per C)
-mkl_dot_product(): product = 245.19251, takes 0.05 (ms, per Python) / 0.00 (ms, per C)
-my_dot_product():  product = 245.19251, takes 0.05 (ms, per Python) / 0.00 (ms, per C)
+lscpu
+Architecture:             x86_64
+  CPU op-mode(s):         32-bit, 64-bit
+  Address sizes:          48 bits physical, 48 bits virtual
+  Byte Order:             Little Endian
+CPU(s):                   12
+  On-line CPU(s) list:    0-11
+Vendor ID:                AuthenticAMD
+  Model name:             AMD Ryzen 5 PRO 6650U with Radeon Graphics
+    CPU family:           25
+    Model:                68
+    Thread(s) per core:   2
+    Core(s) per socket:   6
+    Socket(s):            1
+    Stepping:             1
+    CPU(s) scaling MHz:   69%
+    CPU max MHz:          4583.0000
+    CPU min MHz:          400.0000
+    BogoMIPS:             5788.93
+    Flags:                fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology nonstop_tsc cpuid extd_a
+                          picid aperfmperf rapl pni pclmulqdq monitor ssse3 fma cx16 sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx f16c rdrand lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs s
+                          kinit wdt tce topoext perfctr_core perfctr_nb bpext perfctr_llc mwaitx cpb cat_l3 cdp_l3 hw_pstate ssbd mba ibrs ibpb stibp vmmcall fsgsbase bmi1 avx2 smep bmi2 erms invpcid cqm rdt_a rdseed adx smap clflush
+                          opt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves cqm_llc cqm_occup_llc cqm_mbm_total cqm_mbm_local clzero irperf xsaveerptr rdpru wbnoinvd cppc arat npt lbrv svm_lock nrip_save tsc_scale vmcb_clean flushbyasid
+                           decodeassists pausefilter pfthreshold avic v_vmsave_vmload vgif v_spec_ctrl umip pku ospke vaes vpclmulqdq rdpid overflow_recov succor smca fsrm debug_swap
+```
 
-Generating two vectors, each with 10.0K random doubles...
-numpy:             product = 2,512.47507, takes 0.03 (ms, per Python) / NA    (ms, per C)
-mkl_dot_product(): product = 2,512.47507, takes 0.06 (ms, per Python) / 0.01 (ms, per C)
-my_dot_product():  product = 2,512.47507, takes 0.06 (ms, per Python) / 0.01 (ms, per C)
+```
+$ ./build/mkl-funcs 28
+exp,vector_size,result,takes(ms),result,takes(ms)
+  0,               1,         0.08441,       6.69        0.86087,       6.18
+  1,               2,         0.25604,       0.00        0.83209,       0.00
+  2,               4,         0.91773,       0.00        3.25446,       0.00
+  3,               8,         1.95216,       0.00        5.72372,       0.00
+  4,              16,         4.24978,       0.00       11.31857,       0.00
+  5,              32,         8.15250,       0.00       21.67325,       0.00
+  6,              64,        16.49524,       0.00       46.17946,       0.00
+  7,             128,        29.88029,       0.00       86.98756,       2.50
+  8,             256,        66.00631,       0.00      177.58741,       0.01
+  9,             512,       133.14740,       0.00      355.64768,       0.01
+ 10,            1024,       246.52075,       0.00      713.52369,       0.01
+ 11,            2048,       511.31754,       0.00     1414.31448,       0.27
+ 12,            4096,      1022.21601,       0.01     2842.46354,       0.21
+ 13,            8192,      2079.73797,       0.01     5718.40931,       0.10
+ 14,           16384,      4088.56487,       0.01    11388.65959,       0.08
+ 15,           32768,      8150.52433,       0.01    22655.97841,       0.08
+ 16,           65536,     16314.70648,       0.01    45335.08175,       0.19
+ 17,          131072,     32606.94417,       0.02    90671.45137,       0.34
+ 18,          262144,     65601.21708,       0.06   181658.66546,       0.48
+ 19,          524288,    131113.55208,       0.23   363772.04391,       1.57
+ 20,         1048576,    262105.18291,       0.64   726775.54086,       2.94
+ 21,         2097152,    524258.85703,       1.32  1453797.44149,       4.82
+ 22,         4194304,   1049097.64327,       3.01  2907142.33788,       8.10
+ 23,         8388608,   2096851.97863,       4.61  5814390.43565,      14.19
+ 24,        16777216,   4195050.49550,       9.14 11627500.33221,      37.05
+ 25,        33554432,   8388066.74249,      16.68 23259430.82458,      63.93
+ 26,        67108864,  16779012.78157,      30.78 46517637.62528,     110.29
+ 27,       134217728,  33553120.91043,      60.31 93036283.85352,     270.16
 
-Generating two vectors, each with 100.0K random doubles...
-numpy:             product = 24,965.81085, takes 0.12 (ms, per Python) / NA    (ms, per C)
-mkl_dot_product(): product = 24,965.81085, takes 0.11 (ms, per Python) / 0.05 (ms, per C)
-my_dot_product():  product = 24,965.81085, takes 0.29 (ms, per Python) / 0.23 (ms, per C)
+$ ./build/my-funcs 28
+exp,vector_size,result,takes(ms),result,takes(ms)
+  0,               1,         0.08441,       0.18        0.86087,       0.10
+  1,               2,         0.25604,       0.07        0.83209,       0.04
+  2,               4,         0.91773,       0.08        3.25446,       0.05
+  3,               8,         1.95216,       0.11        5.72372,       0.05
+  4,              16,         4.24978,       0.05       11.31857,       0.06
+  5,              32,         8.15250,       0.05       21.67325,       0.07
+  6,              64,        16.49524,       0.04       46.17946,       0.04
+  7,             128,        29.88029,       0.05       86.98756,       0.04
+  8,             256,        66.00631,       0.04      177.58741,       0.03
+  9,             512,       133.14740,       0.03      355.64768,       0.03
+ 10,            1024,       246.52075,       0.03      713.52369,       0.04
+ 11,            2048,       511.31754,       0.03     1414.31448,       0.06
+ 12,            4096,      1022.21601,       0.04     2842.46354,       0.07
+ 13,            8192,      2079.73797,       0.04     5718.40931,       0.11
+ 14,           16384,      4088.56487,       0.04    11388.65959,       0.20
+ 15,           32768,      8150.52433,       0.05    22655.97841,       0.34
+ 16,           65536,     16314.70648,       0.11    45335.08175,       0.80
+ 17,          131072,     32606.94417,       0.19    90671.45137,       1.65
+ 18,          262144,     65601.21708,       0.26   181658.66546,       3.31
+ 19,          524288,    131113.55208,       0.53   363772.04391,       6.31
+ 20,         1048576,    262105.18291,       0.94   726775.54086,       5.83
+ 21,         2097152,    524258.85703,       1.35  1453797.44149,       9.33
+ 22,         4194304,   1049097.64327,       2.69  2907142.33788,      12.05
+ 23,         8388608,   2096851.97863,       5.00  5814390.43565,      27.36
+ 24,        16777216,   4195050.49550,       9.13 11627500.33221,      58.69
+ 25,        33554432,   8388066.74249,      16.87 23259430.82458,     104.17
+ 26,        67108864,  16779012.78157,      32.09 46517637.62528,     218.90
+ 27,       134217728,  33553120.91043,      65.11 93036283.85352,     438.61
 
-Generating two vectors, each with 1,000.0K random doubles...
-numpy:             product = 249,890.37412, takes 0.64 (ms, per Python) / NA    (ms, per C)
-mkl_dot_product(): product = 249,890.37412, takes 0.71 (ms, per Python) / 0.65 (ms, per C)
-my_dot_product():  product = 249,890.37412, takes 0.79 (ms, per Python) / 0.72 (ms, per C)
+$ my.funcs/bin/Release/net8.0/my.funcs 28
+exp,vector_size,result,takes(ms),result,takes(ms)
+  0,               1,         0.08441,       6.09        0.86087,       0.38
+  1,               2,         0.25604,       0.01        0.83209,       0.00
+  2,               4,         0.91773,       0.01        3.25446,       0.00
+  3,               8,         1.95216,       0.00        5.72372,       0.02
+  4,              16,         4.24978,       0.01       11.31857,       0.00
+  5,              32,         8.15250,       0.00       21.67325,       0.03
+  6,              64,        16.49524,       0.00       46.17946,       0.01
+  7,             128,        29.88029,       0.01       86.98756,       0.01
+  8,             256,        66.00631,       0.00      177.58741,       0.02
+  9,             512,       133.14740,       0.01      355.64768,       0.06
+ 10,            1024,       246.52075,       0.03      713.52369,       0.08
+ 11,            2048,       511.31754,       0.04     1414.31448,       0.07
+ 12,            4096,      1022.21601,       0.04     2842.46354,       0.10
+ 13,            8192,      2079.73797,       0.46     5718.40931,       0.61
+ 14,           16384,      4088.56487,       0.18    11388.65959,       0.29
+ 15,           32768,      8150.52433,       0.15    22655.97841,       0.38
+ 16,           65536,     16314.70648,       0.23    45335.08175,       0.74
+ 17,          131072,     32606.94417,       0.76    90671.45137,       1.80
+ 18,          262144,     65601.21708,       1.38   181658.66546,       3.46
+ 19,          524288,    131113.55208,       2.39   363772.04391,       8.00
+ 20,         1048576,    262105.18291,      13.31   726775.54086,      11.20
+ 21,         2097152,    524258.85703,      32.61  1453797.44149,      15.66
+ 22,         4194304,   1049097.64327,      53.18  2907142.33788,      35.25
+ 23,         8388608,   2096851.97863,      48.98  5814390.43565,      75.60
+ 24,        16777216,   4195050.49550,     135.82 11627500.33221,     140.92
+ 25,        33554432,   8388066.74249,     281.60 23259430.82458,     240.82
+ 26,        67108864,  16779012.78157,     641.72 46517637.62528,     460.35
+ 27,       134217728,  33553120.91043,    1060.22 93036283.85352,     853.06
 
-Generating two vectors, each with 10,000.0K random doubles...
-numpy:             product = 2,499,917.35075, takes 8.96 (ms, per Python) / NA    (ms, per C)
-mkl_dot_product(): product = 2,499,917.35075, takes 10.48 (ms, per Python) / 10.42 (ms, per C)
-my_dot_product():  product = 2,499,917.35075, takes 8.84 (ms, per Python) / 8.77 (ms, per C)
-
-Generating two vectors, each with 100,000.0K random doubles...
-numpy:             product = 25,001,304.15563, takes 85.22 (ms, per Python) / NA    (ms, per C)
-mkl_dot_product(): product = 25,001,304.15563, takes 90.38 (ms, per Python) / 90.31 (ms, per C)
-my_dot_product():  product = 25,001,304.15563, takes 83.13 (ms, per Python) / 83.06 (ms, per C)
-
-Generating two vectors, each with 200,000.0K random doubles...
-numpy:             product = 50,003,564.82433, takes 163.21 (ms, per Python) / NA    (ms, per C)
-mkl_dot_product(): product = 50,003,564.82433, takes 180.64 (ms, per Python) / 180.56 (ms, per C)
-my_dot_product():  product = 50,003,564.82434, takes 160.70 (ms, per Python) / 160.62 (ms, per C)
-
-Generating two vectors, each with 300,000.0K random doubles...
-numpy:             product = 74,993,455.11691, takes 246.62 (ms, per Python) / NA    (ms, per C)
-mkl_dot_product(): product = 74,993,455.11692, takes 282.95 (ms, per Python) / 282.88 (ms, per C)
-my_dot_product():  product = 74,993,455.11691, takes 232.27 (ms, per Python) / 232.20 (ms, per C)
-
+ $ py np-funcs.py 28
+exp,vector_size,result,takes(ms),result,takes(ms)
+  0,              1,         0.08441,       0.01        0.86087,       0.20
+  1,              2,         0.25604,       0.02        0.83209,       0.08
+  2,              4,         0.91773,       0.01        3.25446,       0.07
+  3,              8,         1.95216,       0.01        5.72372,       0.15
+  4,             16,         4.24978,       0.02       11.31857,       0.09
+  5,             32,         8.15250,       0.02       21.67325,       0.15
+  6,             64,        16.49524,       0.02       46.17946,       0.18
+  7,            128,        29.88029,       0.02       86.98756,       0.06
+  8,            256,        66.00631,       0.01      177.58741,       0.08
+  9,            512,       133.14740,       0.01      355.64768,       0.08
+ 10,           1024,       246.52075,       0.02      713.52369,       0.13
+ 11,           2048,       511.31754,       0.01     1414.31448,       0.15
+ 12,           4096,      1022.21601,       0.01     2842.46354,       0.11
+ 13,           8192,      2079.73797,       0.03     5718.40931,       0.39
+ 14,          16384,      4088.56487,       0.02    11388.65959,       0.75
+ 15,          32768,      8150.52433,       0.04    22655.97841,       1.21
+ 16,          65536,     16314.70648,       0.19    45335.08175,       1.09
+ 17,         131072,     32606.94417,       0.16    90671.45137,       2.40
+ 18,         262144,     65601.21708,       0.25   181658.66546,       3.84
+ 19,         524288,    131113.55208,       0.44   363772.04391,       6.33
+ 20,        1048576,    262105.18291,       0.92   726775.54086,      11.82
+ 21,        2097152,    524258.85703,       1.88  1453797.44149,      22.90
+ 22,        4194304,   1049097.64327,       3.45  2907142.33788,      45.85
+ 23,        8388608,   2096851.97863,       6.76  5814390.43565,      94.98
+ 24,       16777216,   4195050.49550,      12.67 11627500.33221,     187.52
+ 25,       33554432,   8388066.74249,      25.00 23259430.82458,     368.14
+ 26,       67108864,  16779012.78157,      51.14 46517637.62528,     743.96
+ 27,      134217728,  33553120.91043,     109.09 93036283.85352,   2,379.95
 ```

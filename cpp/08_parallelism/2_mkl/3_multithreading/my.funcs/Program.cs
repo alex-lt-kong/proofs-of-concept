@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 class Program
 {
@@ -92,6 +93,7 @@ class Program
         if (exp <= 0)
             exp = 5;
         Console.WriteLine("exp,vector_size,result,takes(ms),result,takes(ms)");
+        var stopwatch = new Stopwatch();
         for (int e = 0; e < exp; ++e)
         {
             int arrSize = (int)Math.Pow(base_, e);
@@ -104,17 +106,15 @@ class Program
                 vecB[i] = get_random_0_to_1();
             }
 
-            var t0 = DateTime.Now;
+            stopwatch.Restart();
             var sum = JobsDispatcher(DotProductJob, vecA, vecB, arrSize);
-            var t1 = DateTime.Now;
-            var duration = (t1 - t0).TotalMilliseconds;
-            Console.Write($"{sum,15:F5}, {duration,10:F2}");
+            stopwatch.Stop();
+            Console.Write($"{sum,15:F5}, {stopwatch.Elapsed.TotalMilliseconds,10:F2}");
 
-            t0 = DateTime.Now;
+            stopwatch.Restart();
             sum = JobsDispatcher(ElementWisePowJob, vecA, vecB, arrSize);
-            t1 = DateTime.Now;
-            duration = (t1 - t0).TotalMilliseconds;
-            Console.WriteLine($"{sum,15:F5}, {duration,10:F2}");
+            stopwatch.Stop();
+            Console.WriteLine($"{sum,15:F5}, {stopwatch.Elapsed.TotalMilliseconds,10:F2}");
         }
     }
 }
