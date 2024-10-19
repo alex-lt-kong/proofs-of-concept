@@ -8,6 +8,7 @@
 #include <cmath>
 #include <iomanip>
 #include <iostream>
+#include <thread>
 #include <vector>
 
 using namespace std;
