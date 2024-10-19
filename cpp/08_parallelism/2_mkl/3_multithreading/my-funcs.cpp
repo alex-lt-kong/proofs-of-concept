@@ -1,5 +1,3 @@
-#include "../../utils.h"
-#include "func.h"
 #include "rand.h"
 
 #include <iomanip>
@@ -43,21 +41,6 @@ void element_wise_pow_job(const double *vec_a, const double *vec_b,
 #endif
   for (size_t i = 0; i < block_size; ++i) {
     *sum += pow(vec_a[i + offset], vec_b[i + offset]);
-  }
-}
-
-void element_wise_log_job(const double *vec_a, const double *vec_b,
-                          size_t block_size, long offset, double *sum) {
-#if defined(__INTEL_COMPILER)
-#pragma ivdep
-// Pragmas are specific for the compiler and platform in use. So the best bet is
-// to look at compiler's documentation.
-// https://stackoverflow.com/questions/5078679/what-is-the-scope-of-a-pragma-directive
-#elif defined(__GNUC__)
-#pragma GCC ivdep
-#endif
-  for (size_t i = 0; i < block_size; ++i) {
-    *sum += log(vec_a[i + offset]) / log(vec_b[i + offset]);
   }
 }
 
@@ -131,20 +114,15 @@ int main(int argc, char *argv[]) {
     cout << setw(15) << setprecision(5) << sum << ", " << setw(10)
          << setprecision(2) << duration.count() / 1000.0;
 
+    // hand over CPU to OS for other tasks
+    this_thread::sleep_for(chrono::milliseconds(1000));
+
     t0 = chrono::steady_clock::now();
     sum = jobs_dispatcher(element_wise_pow_job, vec_a.get(), vec_b.get(),
                           arr_size);
     t1 = chrono::steady_clock::now();
     duration = chrono::duration_cast<chrono::microseconds>(t1 - t0);
     cout << setw(15) << setprecision(5) << sum << ", " << setw(10)
-         << setprecision(2) << duration.count() / 1000.0;
-
-    t0 = chrono::steady_clock::now();
-    sum = jobs_dispatcher(element_wise_log_job, vec_a.get(), vec_b.get(),
-                          arr_size);
-    t1 = chrono::steady_clock::now();
-    duration = chrono::duration_cast<chrono::microseconds>(t1 - t0);
-    cout << setw(20) << setprecision(5) << sum << ", " << setw(10)
          << setprecision(2) << duration.count() / 1000.0 << endl;
   }
   return 0;

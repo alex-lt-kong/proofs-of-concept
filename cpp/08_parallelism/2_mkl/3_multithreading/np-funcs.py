@@ -34,15 +34,12 @@ for e in range(exp):
   result = np.dot(vec_a, vec_b)
   t1 = time.time()
   print(f'{result:15.5f}, {(t1 - t0) * 1000:10,.2f}', end='')
+  
+  time.sleep(1)
 
   t0 = time.time()
   result = np.power(vec_a, vec_b).sum()
   t1 = time.time()
-  print(f'{result:15.5f}, {(t1 - t0) * 1000:10,.2f}', end='')
-
-  t0 = time.time()
-  result = (np.log(vec_a) / np.log(vec_b)).sum()
-  t1 = time.time()    
-  print(f'{result:20.5f}, {(t1 - t0) * 1000:10,.2f}')
+  print(f'{result:15.5f}, {(t1 - t0) * 1000:10,.2f}')
   
 

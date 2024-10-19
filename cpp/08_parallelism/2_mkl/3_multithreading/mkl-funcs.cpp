@@ -1,5 +1,3 @@
-#include "../../utils.h"
-#include "func.h"
 #include "rand.h"
 
 #include <ios>
@@ -44,22 +42,15 @@ int main(int argc, char *argv[]) {
     cout << setw(15) << setprecision(5) << sum << ", " << setw(10)
          << setprecision(2) << duration.count() / 1000.0;
 
+    // hand over CPU to OS for other tasks
+    this_thread::sleep_for(chrono::milliseconds(1000));
+
     t0 = chrono::steady_clock::now();
     vdPow(arr_size, vec_a.get(), vec_b.get(), vec_r1.get());
     sum = cblas_dasum(arr_size, vec_r1.get(), 1);
     t1 = chrono::steady_clock::now();
     duration = chrono::duration_cast<chrono::microseconds>(t1 - t0);
     cout << setw(15) << setprecision(5) << sum << ", " << setw(10)
-         << setprecision(2) << duration.count() / 1000.0;
-
-    t0 = chrono::steady_clock::now();
-    vdLn(arr_size, vec_a.get(), vec_r1.get());
-    vdLn(arr_size, vec_b.get(), vec_r2.get());
-    vdDiv(arr_size, vec_r1.get(), vec_r2.get(), vec_r3.get());
-    sum = cblas_dasum(arr_size, vec_r3.get(), 1);
-    t1 = chrono::steady_clock::now();
-    duration = chrono::duration_cast<chrono::microseconds>(t1 - t0);
-    cout << setw(20) << setprecision(5) << sum << ", " << setw(10)
          << setprecision(2) << duration.count() / 1000.0 << endl;
   }
 }
