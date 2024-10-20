@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using Microsoft.VisualBasic;
 
 class Program
 {
@@ -17,9 +18,9 @@ class Program
 
     private static int cpuCount = -1;
 
-    delegate void MathFunc(double[] vecA, double[] vecB, int blockSize, long offset, ref double sum);
+    delegate void MathFunc(double[] vecA, double[] vecB, long blockSize, long offset, ref double sum);
 
-    static void DotProductJob(double[] vecA, double[] vecB, int blockSize, long offset, ref double sum)
+    static void DotProductJob(double[] vecA, double[] vecB, long blockSize, long offset, ref double sum)
     {
         for (int i = 0; i < blockSize; ++i)
         {
@@ -27,7 +28,7 @@ class Program
         }
     }
 
-    static void ElementWisePowJob(double[] vecA, double[] vecB, int blockSize, long offset, ref double sum)
+    static void ElementWisePowJob(double[] vecA, double[] vecB, long blockSize, long offset, ref double sum)
     {
         for (int i = 0; i < blockSize; ++i)
         {
@@ -46,32 +47,40 @@ class Program
         }
     }
 
-    static double JobsDispatcher(MathFunc jobFunc, double[] vecA, double[] vecB, long arrSize)
+    static double JobsDispatcher(MathFunc jobFunc, bool IsSingleThread, double[] vecA, double[] vecB, long arrSize)
     {
         double sum = 0;
 
-        int threadCount = (int)Math.Ceiling(arrSize / 1000.0 / 1000.0);
+        // A magic formula for no good reason except trial-and-error
+        int threadCount = (int)Math.Log(arrSize / Math.Pow(2, 20));
         QueryCpuCount();
         threadCount = threadCount > cpuCount ? cpuCount : threadCount;
-        double[] sums = new double[threadCount + 1];
-        List<Task> tasks = new List<Task>();
+        threadCount = threadCount < 1 ? 1 : threadCount;
+        threadCount = IsSingleThread ? 1 : threadCount;
+
+        if (threadCount == 1)
+        {
+            jobFunc(vecA, vecB, arrSize, 0, ref sum);
+            return sum;
+        }
+
+        var sums = new double[threadCount + 1];
+        var tasks = new List<Task>();
 
         for (int i = 0; i < threadCount; ++i)
         {
             int index = i;
             tasks.Add(Task.Run(() =>
-            {
-                jobFunc(vecA, vecB, (int)(arrSize / threadCount), arrSize / threadCount * index, ref sums[index]);
-            }));
+                jobFunc(vecA, vecB, arrSize / threadCount, arrSize / threadCount * index, ref sums[index])
+            ));
         }
 
         // handle quotient
         if (arrSize % threadCount != 0)
         {
             tasks.Add(Task.Run(() =>
-            {
-                jobFunc(vecA, vecB, (int)(arrSize % threadCount), arrSize / threadCount * threadCount, ref sums[threadCount]);
-            }));
+                jobFunc(vecA, vecB, arrSize % threadCount, arrSize / threadCount * threadCount, ref sums[threadCount])
+            ));
         }
 
         Task.WaitAll(tasks.ToArray());
@@ -92,7 +101,7 @@ class Program
             exp = int.Parse(args[0]);
         if (exp <= 0)
             exp = 5;
-        Console.WriteLine("exp,vector_size,result,takes(ms),result,takes(ms)");
+        Console.WriteLine("exp,vector_size,result,takes(ms)(ST),result,takes(ms)(MT),result,takes(ms)(ST),result,takes(ms)(MT)");
         var stopwatch = new Stopwatch();
         for (int e = 0; e < exp; ++e)
         {
@@ -107,14 +116,24 @@ class Program
             }
 
             stopwatch.Restart();
-            var sum = JobsDispatcher(DotProductJob, vecA, vecB, arrSize);
+            var sum = JobsDispatcher(DotProductJob, true, vecA, vecB, arrSize);
             stopwatch.Stop();
-            Console.Write($"{sum,15:F5}, {stopwatch.Elapsed.TotalMilliseconds,10:F2}");
+            Console.Write($"{sum,18:F5}, {stopwatch.Elapsed.TotalMilliseconds,10:F2}");
 
             stopwatch.Restart();
-            sum = JobsDispatcher(ElementWisePowJob, vecA, vecB, arrSize);
+            sum = JobsDispatcher(DotProductJob, false, vecA, vecB, arrSize);
             stopwatch.Stop();
-            Console.WriteLine($"{sum,15:F5}, {stopwatch.Elapsed.TotalMilliseconds,10:F2}");
+            Console.Write($"{sum,18:F5}, {stopwatch.Elapsed.TotalMilliseconds,10:F2}");
+
+            stopwatch.Restart();
+            sum = JobsDispatcher(ElementWisePowJob, true, vecA, vecB, arrSize);
+            stopwatch.Stop();
+            Console.Write($"{sum,18:F5}, {stopwatch.Elapsed.TotalMilliseconds,10:F2}");
+
+            stopwatch.Restart();
+            sum = JobsDispatcher(ElementWisePowJob, false, vecA, vecB, arrSize);
+            stopwatch.Stop();
+            Console.WriteLine($"{sum,18:F5}, {stopwatch.Elapsed.TotalMilliseconds,10:F2}");
         }
     }
 }

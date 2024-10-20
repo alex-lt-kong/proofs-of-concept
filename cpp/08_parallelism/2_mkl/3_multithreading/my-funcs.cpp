@@ -54,13 +54,20 @@ void query_cpu_count() {
   }
 }
 
-double jobs_dispatcher(MathFunc job_func, const double *vec_a,
-                       const double *vec_b, int64_t arr_size) {
+double jobs_dispatcher(MathFunc job_func, bool is_single_thread,
+                       const double *vec_a, const double *vec_b,
+                       int64_t arr_size) {
   double sum = 0;
-
-  int thread_count = ceil(arr_size / 1000.0 / 1000.0);
+  // A magic formula for no good reason except trial-and-error
+  int thread_count = log(arr_size / pow(2, 20));
   query_cpu_count();
   thread_count = thread_count > cpu_count ? cpu_count : thread_count;
+  thread_count = thread_count < 1 ? 1 : thread_count;
+  thread_count = is_single_thread ? 1 : thread_count;
+  if (thread_count == 1) {
+    job_func(vec_a, vec_b, arr_size, 0, &sum);
+    return sum;
+  }
   unique_ptr<double[]> sums(new double[thread_count + 1]);
   vector<thread> threads;
   threads.reserve(thread_count);
@@ -95,10 +102,11 @@ int main(int argc, char *argv[]) {
     exp = atoi(argv[1]);
   if (exp <= 0)
     exp = 5;
-  cout << "exp,vector_size,result,takes(ms),result,takes(ms)\n";
+  cout << "exp,vector_size,result,takes(ms)(ST),result,takes(ms)(MT),result,"
+          "takes(ms)(ST),result,takes(ms)(MT)\n";
   for (int e = 0; e < exp; ++e) {
     size_t arr_size = pow(base, e);
-    cout << fixed << setw(3) << e << ", " << setw(15) << arr_size << ", ";
+    cout << fixed << setw(3) << e << ", " << setw(18) << arr_size << ", ";
     unique_ptr<double[]> vec_a(new double[arr_size]);
     unique_ptr<double[]> vec_b(new double[arr_size]);
     for (size_t i = 0; i < arr_size; ++i) {
@@ -107,22 +115,44 @@ int main(int argc, char *argv[]) {
     }
 
     auto t0 = chrono::steady_clock::now();
-    auto sum =
-        jobs_dispatcher(dot_product_job, vec_a.get(), vec_b.get(), arr_size);
+    auto sum = jobs_dispatcher(dot_product_job, true, vec_a.get(), vec_b.get(),
+                               arr_size);
     auto t1 = chrono::steady_clock::now();
     auto duration = chrono::duration_cast<chrono::microseconds>(t1 - t0);
-    cout << setw(15) << setprecision(5) << sum << ", " << setw(10)
-         << setprecision(2) << duration.count() / 1000.0;
+    cout << setw(18) << setprecision(5) << sum << ", " << setw(10)
+         << setprecision(2) << duration.count() / 1000.0 << ", ";
 
     // hand over CPU to OS for other tasks
     this_thread::sleep_for(chrono::milliseconds(1000));
 
     t0 = chrono::steady_clock::now();
-    sum = jobs_dispatcher(element_wise_pow_job, vec_a.get(), vec_b.get(),
+    sum = jobs_dispatcher(dot_product_job, false, vec_a.get(), vec_b.get(),
                           arr_size);
     t1 = chrono::steady_clock::now();
     duration = chrono::duration_cast<chrono::microseconds>(t1 - t0);
-    cout << setw(15) << setprecision(5) << sum << ", " << setw(10)
+    cout << setw(18) << setprecision(5) << sum << ", " << setw(10)
+         << setprecision(2) << duration.count() / 1000.0 << ", ";
+
+    // hand over CPU to OS for other tasks
+    this_thread::sleep_for(chrono::milliseconds(1000));
+
+    t0 = chrono::steady_clock::now();
+    sum = jobs_dispatcher(element_wise_pow_job, true, vec_a.get(), vec_b.get(),
+                          arr_size);
+    t1 = chrono::steady_clock::now();
+    duration = chrono::duration_cast<chrono::microseconds>(t1 - t0);
+    cout << setw(18) << setprecision(5) << sum << ", " << setw(10)
+         << setprecision(2) << duration.count() / 1000.0 << ", ";
+
+    // hand over CPU to OS for other tasks
+    this_thread::sleep_for(chrono::milliseconds(1000));
+
+    t0 = chrono::steady_clock::now();
+    sum = jobs_dispatcher(element_wise_pow_job, false, vec_a.get(), vec_b.get(),
+                          arr_size);
+    t1 = chrono::steady_clock::now();
+    duration = chrono::duration_cast<chrono::microseconds>(t1 - t0);
+    cout << setw(18) << setprecision(5) << sum << ", " << setw(10)
          << setprecision(2) << duration.count() / 1000.0 << endl;
   }
   return 0;
