@@ -19,12 +19,12 @@ add_library(
 )
 add_library(rand_static STATIC rand.c)
 
-add_executable(mkl-funcs mkl-funcs.cpp)
-target_link_libraries(mkl-funcs
+add_executable(mkl-impl mkl-impl.cpp)
+target_link_libraries(mkl-impl
   rand_static
   MKL::MKL
 )
 
-add_executable(my-funcs my-funcs.cpp)
-target_link_libraries(my-funcs rand_static)
+add_executable(my-impl my-impl.cpp)
+target_link_libraries(my-impl rand_static)
 
