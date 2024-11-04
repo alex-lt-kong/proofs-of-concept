@@ -21,18 +21,18 @@ public:
     tail.store(dummy);
   }
 
-  void push(T value) {
-    auto newNode = std::make_shared<Node>(std::move(value));
+  void push(T const value) {
+    auto new_node = std::make_shared<Node>(value);
 
     while (true) {
-      auto last = tail.load();
-      auto next = last->next.load();
+      std::shared_ptr<Node> last = tail.load();
+      std::shared_ptr<Node> next = last->next.load();
 
       if (last == tail.load()) {
         if (next == nullptr) {
           std::shared_ptr<Node> nullptr_node;
-          if (last->next.compare_exchange_weak(nullptr_node, newNode)) {
-            tail.compare_exchange_weak(last, newNode);
+          if (last->next.compare_exchange_weak(nullptr_node, new_node)) {
+            tail.compare_exchange_weak(last, new_node);
             return;
           }
         } else {
