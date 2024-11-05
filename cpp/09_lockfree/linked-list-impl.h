@@ -15,7 +15,7 @@ private:
   std::atomic<std::shared_ptr<Node>> tail;
 
 public:
-  LockFreeQueue() {
+  LockFreeQueue(int dummy_int) {
     auto dummy = std::make_shared<Node>();
     head.store(dummy);
     tail.store(dummy);
