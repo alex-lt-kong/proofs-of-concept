@@ -1,0 +1,9 @@
+{
+  "name" : "10-zeromq",
+  "version-string" : "1.0.0",
+  "builtin-baseline" : "65be7019941e1401e02daaba0738cab2c8a4a355",
+  "dependencies" : [ {
+    "name" : "cppzmq",
+    "version>=" : "4.10.0"
+  } ]
+}
