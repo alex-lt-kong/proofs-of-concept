@@ -5,6 +5,12 @@
 #include <optional>
 #include <vector>
 
+/* Refer to
+ * - https://github.com/facebook/folly/blob/main/folly/ProducerConsumerQueue.h
+ * -
+ * https://github.com/cameron314/readerwriterqueue/blob/master/readerwritercircularbuffer.h
+ */
+
 /* Notes:
  * - load() always comes with std::memory_order_acquire, aka, read-acquire
  * - store() always comes with std::memory_order_release, aka, write-release
@@ -15,15 +21,15 @@
  * releasing write
  */
 namespace PoC::LockFree {
-template <typename T> class RingBuffer1P1C {
+template <typename T> class RingBufferSPSC {
 public:
-  explicit RingBuffer1P1C(const size_t capacity)
+  explicit RingBufferSPSC(const size_t capacity)
       // we want to distinguish between buffer empty and buffer full, so we need
       // the allocate capacity+1
       : m_capacity(capacity + 1), m_buffer(capacity + 1), m_write_ptr(0),
         m_read_ptr(0) {}
 
-  bool enqueue(const T &item) {
+  bool enqueue(T &&item) {
     size_t tail = m_write_ptr.load(std::memory_order_relaxed);
     const size_t next_tail = (tail + 1) % m_capacity;
 
@@ -31,20 +37,20 @@ public:
       return false; // Buffer is full
     }
 
-    m_buffer[tail] = item;
+    m_buffer[tail] = std::forward<T>(item);
     m_write_ptr.store(next_tail, std::memory_order_release);
     return true;
   }
 
-  std::optional<T> dequeue() {
+  bool dequeue(T &item) {
     size_t head = m_read_ptr.load(std::memory_order_relaxed);
     if (head == m_write_ptr.load(std::memory_order_acquire)) {
-      return std::nullopt; // Buffer is empty
+      return false; // Buffer is empty
     }
 
-    T item = m_buffer[head];
+    item = std::move(m_buffer[head]);
     m_read_ptr.store((head + 1) % m_capacity, std::memory_order_release);
-    return item;
+    return true;
   }
 
   [[nodiscard]] std::size_t size_approx() const {
@@ -54,6 +60,7 @@ public:
       return tail - head;
     return (m_capacity + tail - head) % m_capacity;
   }
+  [[nodiscard]] std::size_t capacity() const { return m_capacity - 1; }
 
 private:
   const size_t m_capacity;
