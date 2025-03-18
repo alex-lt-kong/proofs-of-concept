@@ -54,8 +54,8 @@ public:
   }
 
   [[nodiscard]] std::size_t size_approx() const {
-    const size_t tail = m_write_ptr.load(std::memory_order_relaxed);
-    const size_t head = m_read_ptr.load(std::memory_order_relaxed);
+    const size_t tail = m_write_ptr.load(std::memory_order_acquire);
+    const size_t head = m_read_ptr.load(std::memory_order_acquire);
     if (tail >= head)
       return tail - head;
     return (m_capacity + tail - head) % m_capacity;
