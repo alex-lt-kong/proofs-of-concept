@@ -1,31 +1,32 @@
 #include "pc_queue.h"
 #include "pc_queue_impl/atomic_queue.h"
 #include "pc_queue_impl/mutex_deque.h"
-#include "pc_queue_impl/ramalhete_queue.h"
+// #include "pc_queue_impl/ramalhete_queue.h"
+#include "pc_queue_impl/my_ringbuffer.h"
 #include "pc_queue_impl/reader_writer_queue.h"
-#include "pc_queue_impl/reader_writer_ring_buffer.h"
-
 #include <chrono>
 #include <iostream>
-#include <stdio.h>
-#include <string.h>
+#include <print>
 #include <unistd.h>
 
 using namespace std;
 
+void cb_on_dequeue(const uint32_t &ele, std::size_t msg_count) {
+  std::println("{},{}", ele, msg_count);
+}
+
 template <class T_QUEUE>
-inline auto benchmark(size_t iterations, uint32_t *elements,
-                      size_t element_count, uint32_t *element_counter) {
+auto benchmark(size_t iterations, uint32_t *elements, size_t element_count) {
   auto start = chrono::high_resolution_clock::now();
 
-  auto pcq = PcQueue<T_QUEUE>(iterations, element_counter);
+  auto pcq = PcQueue<T_QUEUE>(iterations, cb_on_dequeue);
   pcq.start();
   start = chrono::high_resolution_clock::now();
   for (uint32_t i = 0; i < iterations; i++) {
-    pcq.enqueue(&elements[i % element_count]);
+    pcq.enqueue(elements[i % element_count]);
   }
   pcq.wait();
-  auto end = chrono::high_resolution_clock::now();
+  const auto end = chrono::high_resolution_clock::now();
 
   return std::make_tuple(
       pcq.handled_msg_count(),
@@ -33,7 +34,7 @@ inline auto benchmark(size_t iterations, uint32_t *elements,
 }
 
 template <class T_QUEUE> void benchmark_executor(string impl_name) {
-  constexpr size_t iter_count = 1000 * 1000 * 100;
+  constexpr size_t iter_count = 10;
   uint32_t ele_arr[] = {0, 2, 2, 2, 4, 5, 5, 7, 8, 9};
   constexpr size_t ele_len = sizeof(ele_arr) / sizeof(ele_arr[0]);
 
@@ -41,19 +42,13 @@ template <class T_QUEUE> void benchmark_executor(string impl_name) {
 
   for (size_t i = 0; i < 10; ++i) {
     uint32_t ele_counter[ele_len] = {0};
-    auto [msg_count, elasped_ns] =
-        benchmark<T_QUEUE>(iter_count, ele_arr, ele_len, ele_counter);
+    auto [msg_count, elapsed_ns] =
+        benchmark<T_QUEUE>(iter_count, ele_arr, ele_len);
     std::locale loc("");
     std::cout.imbue(loc);
-    cout << "iter: " << i << ", elasped_ms: " << elasped_ns / 1000 / 1000
+    cout << "iter: " << i << ", elapsed_ms: " << elapsed_ns / 1000 / 1000
          << ", handled_msg: " << msg_count
-         << ", ops/sec: " << msg_count * 1000 * 1000 * 1000 / elasped_ns
-         << ", counter: ";
-    for (size_t j = 0; j < 10; ++j) {
-      cout << ele_counter[j];
-      if (j < 9)
-        cout << "|";
-    }
+         << ", ops/sec: " << msg_count * 1000 * 1000 * 1000 / elapsed_ns;
     cout << "\n";
   }
   std::cout << "\n" << std::endl;
@@ -82,10 +77,10 @@ void print_cpu_model() {
 
 int main(void) {
   print_cpu_model();
-  benchmark_executor<brwcb>("moodycamel::BlockingReaderWriterCircularBuffer");
-  benchmark_executor<rwq>("moodycamel::ReaderWriterQueue");
+
   benchmark_executor<aqb>("max0x7ba/OptimistAtomicQueues");
-  benchmark_executor<rq>("xenium/ramalhete_queue");
+  benchmark_executor<myrb>("PoC::LockFree::RingBufferSPSC");
+  benchmark_executor<rwq>("moodycamel::ReaderWriterQueue");
   benchmark_executor<dq>("std::deque with std::mutex");
   return 0;
 }
