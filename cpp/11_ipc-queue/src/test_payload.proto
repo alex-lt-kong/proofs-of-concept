@@ -1,0 +1,11 @@
+syntax = "proto3";
+// Define a package name (optional for organization)
+package boost_ipc_payload;
+
+message TestMessage {
+    int64 unix_time_us = 1;
+    uint32 seq_num = 2;
+    bool is_active = 3;
+    string message_text = 4;
+    double some_value = 5;
+}
