@@ -4,15 +4,15 @@
 
 #include <readerwriterqueue/readerwriterqueue.h>
 
-using rwq = moodycamel::ReaderWriterQueue<uint32_t *>;
+using rwq = moodycamel::ReaderWriterQueue<uint32_t, 1024 * 1024>;
 
 template <> inline void PcQueue<rwq>::consume() {
-  uint32_t *msg;
+  uint32_t msg;
   while (true) {
-    if (msg_count < iterations) [[likely]] {
+    if (msg_count < m_enqueue_iterations) [[likely]] {
       if (q.try_dequeue(msg)) [[likely]] {
         ++msg_count;
-        ++element_counter[*msg];
+        m_cb_on_dequeue(msg, msg_count);
       }
     } else [[unlikely]] {
       break;
@@ -20,4 +20,4 @@ template <> inline void PcQueue<rwq>::consume() {
   }
 }
 
-template <> inline void PcQueue<rwq>::enqueue(uint32_t *msg) { q.enqueue(msg); }
+template <> inline void PcQueue<rwq>::enqueue(uint32_t msg) { q.enqueue(msg); }
