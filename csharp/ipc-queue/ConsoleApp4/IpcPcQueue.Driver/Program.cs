@@ -41,8 +41,6 @@ namespace PcQueueExample
             }
             MyPayload payload;
             long msgCount = 0;
-            //long prevSeqNum = -1;
-            long prevHead = -1;
             long sampleCount = 0;
             long maxLatencyUs = -1;
             const long stdoutIntervalSec = 5;
@@ -71,12 +69,6 @@ namespace PcQueueExample
                 if (payload.SeqNum != seqNumByProducers[payload.ProducerId] + 1) {
                     Console.WriteLine($"producerId: {payload.ProducerId}, prevSeqNum: {seqNumByProducers[payload.ProducerId]}, payload.SeqNum: {payload.SeqNum}, diff:{payload.SeqNum - seqNumByProducers[payload.ProducerId]}, head: {queue.GetHeadIndex()}, tail: {queue.GetTailIndex()}, UsedSpace: {queue.GetUsedSpace()}");
                 }
-                if (prevHead != queue.GetHeadIndex() - 28 && !(prevHead == 1344 &&  queue.GetHeadIndex() == 28)) 
-                {
-                    Console.WriteLine($"prevHead: {prevHead}, head: {queue.GetHeadIndex()}");
-                }
-
-                prevHead = queue.GetHeadIndex();
 
                 seqNumByProducers[payload.ProducerId] = payload.SeqNum;
                 if (!(t1 - prevT1 > stdoutIntervalSec * 1_000_000)  /*&& queue.GetUsedSpace() > 0*/) continue;
