@@ -169,7 +169,7 @@ namespace IpcPcQueue.Benchmark
               //  Thread.Sleep(1000);
                 if (!success)
                 {
-                    Console.WriteLine($"Enqueue() failed (msgCount: {msgCount}");
+                    Console.WriteLine($"Enqueue() failed (msgCount: {msgCount})");
                     //Thread.Sleep(1);
                 }
                 else

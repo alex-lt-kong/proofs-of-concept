@@ -1,4 +1,6 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Diagnostics;
+using System.IO.MemoryMappedFiles;
+using System.Runtime.InteropServices;
 
 namespace IpcPcQueue.Queue;
 
@@ -9,10 +11,9 @@ public unsafe class MpscQueue : SpscQueue
         base(queueName, initialize, capacityBytes)
     {
         _maxProducerCount = maxProducerCount;
-        Console.WriteLine($"_maxProducerCount: {_maxProducerCount}");
     }
-    
-    public new bool Enqueue(byte[] msgBytes)
+
+    public override bool Enqueue(byte[] msgBytes)
     {
         int msgLength = msgBytes.Length;
         int recordLength = 4 + msgLength; // 4 bytes for the length field plus the payload.

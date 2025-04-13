@@ -1,4 +1,5 @@
-﻿using System.IO.MemoryMappedFiles;
+﻿using System.Diagnostics;
+using System.IO.MemoryMappedFiles;
 using System.Runtime.InteropServices;
 
 namespace IpcPcQueue.Queue;
@@ -9,24 +10,22 @@ public unsafe class SpscQueue : IQueue, IDisposable
     protected const int HeaderSize = sizeof(int) * 2;
     protected readonly int DataSize;
     protected readonly byte* BasePtr = null;
-    private readonly bool _initialize;
-    private readonly MemoryMappedFile _mmf;
-    private readonly MemoryMappedViewAccessor _accessor;
+    protected readonly MemoryMappedFile Mmf;
+    protected readonly MemoryMappedViewAccessor Accessor;
 
     public SpscQueue(string queueName, bool initialize = false, int capacityBytes = 3210)
     {
         _mappedFileName += queueName;
-        _initialize = initialize;
         DataSize = capacityBytes;
         var totalSize = DataSize + HeaderSize;
-        _mmf = MemoryMappedFile.CreateOrOpen(_mappedFileName, totalSize, MemoryMappedFileAccess.ReadWrite);
-        _accessor = _mmf.CreateViewAccessor(0, totalSize, MemoryMappedFileAccess.ReadWrite);
+        Mmf = MemoryMappedFile.CreateOrOpen(_mappedFileName, totalSize, MemoryMappedFileAccess.ReadWrite);
+        Accessor = Mmf.CreateViewAccessor(0, totalSize, MemoryMappedFileAccess.ReadWrite);
 
-        _accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref BasePtr);
+        Accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref BasePtr);
 
         if (!initialize) return;
-        _accessor.Write(0, 0); // head
-        _accessor.Write(4, 0); // tail
+        Accessor.Write(0, 0); // head
+        Accessor.Write(4, 0); // tail
     }
 
     public override bool Enqueue(byte[] msgBytes)
@@ -124,10 +123,9 @@ public unsafe class SpscQueue : IQueue, IDisposable
 
     public void Dispose()
     {
-        _accessor.SafeMemoryMappedViewHandle.ReleasePointer();
-        //Accessor?.Dispose();
-        if (_initialize)
-            _mmf?.Dispose();
+        Accessor.SafeMemoryMappedViewHandle.ReleasePointer();
+        Accessor?.Dispose();
+        Mmf?.Dispose();
     }
 
     public int GetUsedSpace(int head = -1, int tail = -1)
