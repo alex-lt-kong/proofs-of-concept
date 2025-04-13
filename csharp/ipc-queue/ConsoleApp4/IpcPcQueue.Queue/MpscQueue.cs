@@ -6,7 +6,7 @@ namespace IpcPcQueue.Queue;
 
 public unsafe class MpscQueue : SpscQueue
 {
-    public MpscQueue(string queueName, int queueSizeBytes = 512, bool initialize = false) : base(queueName, queueSizeBytes, initialize)
+    public MpscQueue(string queueName, int queueSizeBytes = 1357, bool initialize = false) : base(queueName, queueSizeBytes, initialize)
     {
     }
 
@@ -43,6 +43,7 @@ public unsafe class MpscQueue : SpscQueue
                 }
                 newTail = recordLength; // Funny, newTail will be the size of the record.
             }
+            // reserves space by doing a CAS 
         } while (Interlocked.CompareExchange(ref *tailPtr, newTail, tail) != tail);
 
         int msgOffset = tail;
@@ -56,7 +57,7 @@ public unsafe class MpscQueue : SpscQueue
             msgOffset = 0; // Wrapped, new position starts at the beginning
         }
         
-        if (msgLength == 0) throw new UnreachableException("msgLength == 0 in Enqueue()");
+
         Marshal.Copy(msgBytes, 0, new IntPtr(dataOffset + msgOffset + 4), msgLength);
         // Publish the record by writing the message length with a release (volatile) write.
         Volatile.Write(ref *((int*)(dataOffset + msgOffset)), msgLength);

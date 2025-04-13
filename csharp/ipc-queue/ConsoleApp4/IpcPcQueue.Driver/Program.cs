@@ -8,6 +8,7 @@ namespace PcQueueExample
     {
         public long UnixTimeTs;
         public long SeqNum;
+        public short ProducerId;
     }
 
     class Program
@@ -20,7 +21,7 @@ namespace PcQueueExample
             }
             else if (args.Length > 0 && args[0].ToLower() == "producer")
             {
-                RunProducer(args[1]);
+                RunProducer(args[1], short.Parse(args[2]));
             }
             else
             {
@@ -33,7 +34,7 @@ namespace PcQueueExample
             Console.WriteLine("Consumer started and initializing the queue...");
             long prevT1 = 0;
             byte[] msgBytes;
-            long[] seqNumByProducers = new long[1];
+            long[] seqNumByProducers = new long[short.MaxValue];
             unsafe
             {
                 msgBytes = new byte[sizeof(MyPayload)];
@@ -44,13 +45,13 @@ namespace PcQueueExample
             long sampleCount = 0;
             long maxLatencyUs = -1;
             const long stdoutIntervalSec = 5;
-            var queue = new SpscQueue(qName);
+            var queue = new MpscQueue(qName);
             Console.WriteLine("Waiting for messages...");
             while (true)
             {
-                //hread.Sleep(5000);
+                //Thread.Sleep(1500);
                 //Console.WriteLine($"Before Dequeue(), head: {queue.GetHeadIndex()}, tail: {queue.GetTailIndex()}, UsedSpace: {queue.GetUsedSpace()}");
-                if (queue.Dequeue(ref msgBytes) < 0)
+                if (queue.Dequeue(ref msgBytes) <= 0)
                 {
                     continue;
                 }
@@ -66,23 +67,23 @@ namespace PcQueueExample
                 long t1 = timeSinceEpoch.Ticks / (TimeSpan.TicksPerMillisecond / 1000);
                 ++msgCount;
                 
-                if (payload.SeqNum != seqNumByProducers[0] + 1) {
-                    Console.WriteLine($"prevSeqNum: {seqNumByProducers[0]}, payload.SeqNum: {payload.SeqNum}, diff:{payload.SeqNum - seqNumByProducers[0]}");
+                if (payload.SeqNum != seqNumByProducers[payload.ProducerId] + 1) {
+                    Console.WriteLine($"producerId: {payload.ProducerId}, prevSeqNum: {seqNumByProducers[payload.ProducerId]}, payload.SeqNum: {payload.SeqNum}, diff:{payload.SeqNum - seqNumByProducers[payload.ProducerId]}, head: {queue.GetHeadIndex()}, tail: {queue.GetTailIndex()}, UsedSpace: {queue.GetUsedSpace()}");
                 }
-                seqNumByProducers[0] = payload.SeqNum;
+                seqNumByProducers[payload.ProducerId] = payload.SeqNum;
                 if (!(t1 - prevT1 > stdoutIntervalSec * 1_000_000)  /*&& queue.GetUsedSpace() > 0*/) continue;
                 
                 ++sampleCount;
                 var latencyUs = t1 - payload.UnixTimeTs;
                 if (maxLatencyUs < latencyUs && sampleCount > 1)
                     maxLatencyUs = latencyUs;
-                Console.WriteLine($"SeqNum: {payload.SeqNum}, t0: {payload.UnixTimeTs}, latencyUs: {latencyUs}, maxLatencyUs (percentile:{(1-1.0/sampleCount)*100.0:n1}): {maxLatencyUs}, msgCount/sec: {msgCount / stdoutIntervalSec:n0}");
+                Console.WriteLine($"SeqNum: {payload.SeqNum}, ProducerId: {payload.ProducerId}, t0: {payload.UnixTimeTs}, latencyUs: {latencyUs}, maxLatencyUs (percentile:{(1-1.0/sampleCount)*100.0:n1}): {maxLatencyUs}, msgCount/sec: {msgCount / stdoutIntervalSec:n0}");
                 prevT1 = t1;
                 msgCount = 0;
             }
         }
 
-        static void RunProducer(string qName)
+        static void RunProducer(string qName, short producerId)
         {
             var byteArrayPool = new byte[128][];
             for (int i = 0; i < byteArrayPool.Length; i++)
@@ -92,11 +93,12 @@ namespace PcQueueExample
                 }
             }
 
-            var queue = new SpscQueue(qName);
+            var queue = new MpscQueue(qName);
             Console.WriteLine("Producer started.");
             long msgCount = 0;
             long idx = 0;
             MyPayload payload;
+            payload.ProducerId = producerId;
             while (true)
             {
                 DateTimeOffset now = DateTimeOffset.UtcNow;
@@ -114,18 +116,16 @@ namespace PcQueueExample
                     }
                 }
                 bool success = queue.Enqueue(byteArrayPool[idx]);
-                //Thread.Sleep(1000);
+              //  Thread.Sleep(1000);
                 if (!success)
                 {
                     Console.WriteLine($"Enqueue() failed (msgCount: {msgCount}, UsedSpace: {queue.GetUsedSpace()}, head: {queue.GetHeadIndex()}, tail: {queue.GetTailIndex()})");
-                    if (queue.GetHeadIndex() == 4)
-                        break;
                     //Thread.Sleep(1);
                 }
                 else
                 {
                     msgCount++;
-                    //Console.WriteLine($"Enqueue()ed (head: {queue.GetHeadIndex()}, tail: {queue.GetTailIndex()}, msgCount: {msgCount}, UsedSpace: {queue.GetUsedSpace()})");
+                //    Console.WriteLine($"Enqueue()ed (head: {queue.GetHeadIndex()}, tail: {queue.GetTailIndex()}, msgCount: {msgCount}, UsedSpace: {queue.GetUsedSpace()})");
                     idx = msgCount % 128;
                 }
             }
