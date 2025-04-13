@@ -6,9 +6,9 @@ namespace PcQueueExample
     [StructLayout(LayoutKind.Sequential)]
     public struct MyPayload
     {
-        public long UnixTimeTs;
-        public long SeqNum;
-        public short ProducerId;
+        public Int64 UnixTimeTs;
+        public Int64 SeqNum;
+        public Int16 ProducerId;
     }
 
     class Program
@@ -42,6 +42,7 @@ namespace PcQueueExample
             MyPayload payload;
             long msgCount = 0;
             //long prevSeqNum = -1;
+            long prevHead = -1;
             long sampleCount = 0;
             long maxLatencyUs = -1;
             const long stdoutIntervalSec = 5;
@@ -49,7 +50,7 @@ namespace PcQueueExample
             Console.WriteLine("Waiting for messages...");
             while (true)
             {
-                //Thread.Sleep(1500);
+                //Thread.Sleep(1);
                 //Console.WriteLine($"Before Dequeue(), head: {queue.GetHeadIndex()}, tail: {queue.GetTailIndex()}, UsedSpace: {queue.GetUsedSpace()}");
                 if (queue.Dequeue(ref msgBytes) <= 0)
                 {
@@ -70,6 +71,13 @@ namespace PcQueueExample
                 if (payload.SeqNum != seqNumByProducers[payload.ProducerId] + 1) {
                     Console.WriteLine($"producerId: {payload.ProducerId}, prevSeqNum: {seqNumByProducers[payload.ProducerId]}, payload.SeqNum: {payload.SeqNum}, diff:{payload.SeqNum - seqNumByProducers[payload.ProducerId]}, head: {queue.GetHeadIndex()}, tail: {queue.GetTailIndex()}, UsedSpace: {queue.GetUsedSpace()}");
                 }
+                if (prevHead != queue.GetHeadIndex() - 28 && !(prevHead == 1344 &&  queue.GetHeadIndex() == 28)) 
+                {
+                    Console.WriteLine($"prevHead: {prevHead}, head: {queue.GetHeadIndex()}");
+                }
+
+                prevHead = queue.GetHeadIndex();
+
                 seqNumByProducers[payload.ProducerId] = payload.SeqNum;
                 if (!(t1 - prevT1 > stdoutIntervalSec * 1_000_000)  /*&& queue.GetUsedSpace() > 0*/) continue;
                 
@@ -127,6 +135,9 @@ namespace PcQueueExample
                     msgCount++;
                 //    Console.WriteLine($"Enqueue()ed (head: {queue.GetHeadIndex()}, tail: {queue.GetTailIndex()}, msgCount: {msgCount}, UsedSpace: {queue.GetUsedSpace()})");
                     idx = msgCount % 128;
+                    for (int i = 0; i < 2; ++i)
+                    {
+                    }
                 }
             }
         }

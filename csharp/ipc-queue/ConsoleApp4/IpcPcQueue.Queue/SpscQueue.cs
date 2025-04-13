@@ -13,7 +13,7 @@ public unsafe class SpscQueue : IDisposable
     protected readonly MemoryMappedFile _mmf;
     protected readonly MemoryMappedViewAccessor _accessor;
 
-    public SpscQueue(string queueName, int queueSizeBytes = 1357, bool initialize = false)
+    public SpscQueue(string queueName, int queueSizeBytes = 3210, bool initialize = false)
     {
         MappedFileName += queueName;
         DataSize = queueSizeBytes;
@@ -84,9 +84,7 @@ public unsafe class SpscQueue : IDisposable
         int tail = Volatile.Read(ref *tailPtr);
         if (head == tail)
             return -1; // No message available.
-        //Thread.Sleep(1);
-        //Console.WriteLine($"In Dequeue(): head: {head}, tail: {tail}");
-        // int msgLength = *((int*)(dataOffset + head));
+
         int msgLength = Volatile.Read(ref *((int*)(dataOffset + head)));
         if (msgLength == 0)
         {
@@ -94,8 +92,8 @@ public unsafe class SpscQueue : IDisposable
         }
         if (msgLength == -2) // For MPSC issue, slot allocated, but not written yet
             return -1; 
-        //Console.WriteLine($"msgLength: {msgLength}");
-        // If a wrap marker (-1) is encountered, reset head to the beginning.
+
+        
         if (msgLength == -1)
         {
             head = 0;
@@ -104,10 +102,11 @@ public unsafe class SpscQueue : IDisposable
             if (msgLength == 0) return -1;
         }
 
-        if (msgLength < 2) // For MPSC issue, slot allocated, but not written yet
+        if (msgLength == -2) // For MPSC issue, slot allocated, but not written yet
             return -1; 
 
 
+        Volatile.Write(ref *((int*)(dataOffset + head)), -2);
         Marshal.Copy(new IntPtr(dataOffset + head + 4), buffer, 0, msgLength);
 
         // Advance the head pointer past the record.
