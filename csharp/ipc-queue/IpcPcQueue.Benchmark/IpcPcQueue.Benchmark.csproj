@@ -13,4 +13,8 @@
       <ProjectReference Include="..\IpcPcQueue.Queue\IpcPcQueue.Queue.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="FluentCommandLineParser" Version="1.5.0.20-commands" />
+    </ItemGroup>
+
 </Project>

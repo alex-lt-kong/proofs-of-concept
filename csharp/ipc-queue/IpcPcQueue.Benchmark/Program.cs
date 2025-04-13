@@ -1,7 +1,9 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Net.Mime;
+using System.Runtime.InteropServices;
+using Fclp;
 using IpcPcQueue.Queue;
 
-namespace PcQueueExample
+namespace IpcPcQueue.Benchmark
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct MyPayload
@@ -10,28 +12,76 @@ namespace PcQueueExample
         public Int64 SeqNum;
         public Int16 ProducerId;
     }
-
+    
+    internal class AppArgs
+    {
+        public string Role { get; set; }
+        public string QueueName { get; set; }
+        public string ProducerIdStr { get; set; }
+        public short ProducerId => short.Parse(ProducerIdStr);
+    }
+    
     class Program
     {
-        static void Main(string[] args)
+        private static AppArgs? ReadCommandLineArgs(string[] args)
         {
-            if (args.Length > 0 && args[0].ToLower() == "consumer")
+            var parser = new FluentCommandLineParser<AppArgs?>();
+            parser.Setup(arg => arg.Role).As('r', "role").WithDescription("Valid values are: 'SpscConsumer', 'SpscProducer', 'MpscConsumer', 'MpscProducer'").Required();
+            parser.Setup(arg => arg.QueueName).As('q', "queue-name").Required();
+            parser.Setup(arg => arg.ProducerIdStr).As('i', "producer-id").SetDefault("1");
+            parser.SetupHelp("h", "help").Callback(text =>
             {
-                RunConsumer(args[1]);
-            }
-            else if (args.Length > 0 && args[0].ToLower() == "producer")
-            {
-                RunProducer(args[1], short.Parse(args[2]));
-            }
-            else
-            {
-                Console.WriteLine("Usage: PcQueueExample.exe [consumer|producer]");
-            }
+                Console.WriteLine(text);
+                Environment.Exit(0);
+            });
+            
+            var result = parser.Parse(args);
+            if (!result.HasErrors) return parser.Object;
+            Console.Error.WriteLine(result.ErrorText);
+            return null;
         }
         
-        static void RunConsumer(string qName)
+        static void Main(string[] args)
+        {
+            var commandLine = ReadCommandLineArgs(args);
+            if (commandLine == null) return;
+
+            switch (commandLine.Role)
+            {
+                case "SpscProducer":
+                {
+                    var queue = new SpscQueue(commandLine.QueueName);
+                    RunProducer(queue, commandLine.ProducerId);
+                    break;
+                }
+                case "MpscProducer":
+                {
+                    var queue = new MpscQueue(commandLine.QueueName);
+                    RunProducer(queue, commandLine.ProducerId);
+                    break;
+                }
+                case "SpscConsumer":
+                {
+                    var queue = new SpscQueue(commandLine.QueueName, true);
+                    RunConsumer(queue);
+                    break;
+                }
+                case "MpscConsumer":
+                {
+                    var queue = new MpscQueue(commandLine.QueueName, true);
+                    RunConsumer(queue);
+                    break;
+                }
+                default:
+                    Console.WriteLine("Invalid role specified.");
+                    break;
+            }
+        }
+
+        private static void RunConsumer(IQueue queue)
         {
             Console.WriteLine("Consumer started and initializing the queue...");
+           
             long prevT1 = 0;
             byte[] msgBytes;
             long[] seqNumByProducers = new long[short.MaxValue];
@@ -44,7 +94,7 @@ namespace PcQueueExample
             long sampleCount = 0;
             long maxLatencyUs = -1;
             const long stdoutIntervalSec = 5;
-            var queue = new MpscQueue(qName);
+            //var queue = new T(queueName);
             Console.WriteLine("Waiting for messages...");
             while (true)
             {
@@ -67,11 +117,11 @@ namespace PcQueueExample
                 ++msgCount;
                 
                 if (payload.SeqNum != seqNumByProducers[payload.ProducerId] + 1) {
-                    Console.WriteLine($"producerId: {payload.ProducerId}, prevSeqNum: {seqNumByProducers[payload.ProducerId]}, payload.SeqNum: {payload.SeqNum}, diff:{payload.SeqNum - seqNumByProducers[payload.ProducerId]}, head: {queue.GetHeadIndex()}, tail: {queue.GetTailIndex()}, UsedSpace: {queue.GetUsedSpace()}");
+                    Console.WriteLine($"producerId: {payload.ProducerId}, prevSeqNum: {seqNumByProducers[payload.ProducerId]}, payload.SeqNum: {payload.SeqNum}, diff:{payload.SeqNum - seqNumByProducers[payload.ProducerId]}");
                 }
 
                 seqNumByProducers[payload.ProducerId] = payload.SeqNum;
-                if (!(t1 - prevT1 > stdoutIntervalSec * 1_000_000)  /*&& queue.GetUsedSpace() > 0*/) continue;
+                if (!(t1 - prevT1 > stdoutIntervalSec * 1_000_000) /*&& queue.GetUsedSpace() > 0*/) continue;
                 
                 ++sampleCount;
                 var latencyUs = t1 - payload.UnixTimeTs;
@@ -83,7 +133,7 @@ namespace PcQueueExample
             }
         }
 
-        static void RunProducer(string qName, short producerId)
+        static void RunProducer(IQueue queue, short producerId)
         {
             var byteArrayPool = new byte[128][];
             for (int i = 0; i < byteArrayPool.Length; i++)
@@ -93,7 +143,7 @@ namespace PcQueueExample
                 }
             }
 
-            var queue = new MpscQueue(qName);
+            //var queue = new MpscQueue(queueName);
             Console.WriteLine("Producer started.");
             long msgCount = 0;
             long idx = 0;
@@ -119,7 +169,7 @@ namespace PcQueueExample
               //  Thread.Sleep(1000);
                 if (!success)
                 {
-                    Console.WriteLine($"Enqueue() failed (msgCount: {msgCount}, UsedSpace: {queue.GetUsedSpace()}, head: {queue.GetHeadIndex()}, tail: {queue.GetTailIndex()})");
+                    Console.WriteLine($"Enqueue() failed (msgCount: {msgCount}");
                     //Thread.Sleep(1);
                 }
                 else
@@ -127,9 +177,6 @@ namespace PcQueueExample
                     msgCount++;
                 //    Console.WriteLine($"Enqueue()ed (head: {queue.GetHeadIndex()}, tail: {queue.GetTailIndex()}, msgCount: {msgCount}, UsedSpace: {queue.GetUsedSpace()})");
                     idx = msgCount % 128;
-                    for (int i = 0; i < 2; ++i)
-                    {
-                    }
                 }
             }
         }

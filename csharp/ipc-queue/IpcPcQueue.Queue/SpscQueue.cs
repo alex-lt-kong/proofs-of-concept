@@ -1,34 +1,35 @@
-﻿using System.Diagnostics;
-using System.IO.MemoryMappedFiles;
+﻿using System.IO.MemoryMappedFiles;
 using System.Runtime.InteropServices;
 
 namespace IpcPcQueue.Queue;
 
-public unsafe class SpscQueue : IDisposable
+public unsafe class SpscQueue : IQueue, IDisposable
 {
     private readonly string _mappedFileName = "Local\\";
     protected const int HeaderSize = sizeof(int) * 2;
     protected readonly int DataSize;
     protected readonly byte* BasePtr = null;
-    protected readonly MemoryMappedFile Mmf;
-    protected readonly MemoryMappedViewAccessor Accessor;
+    private readonly bool _initialize;
+    private readonly MemoryMappedFile _mmf;
+    private readonly MemoryMappedViewAccessor _accessor;
 
     public SpscQueue(string queueName, bool initialize = false, int capacityBytes = 3210)
     {
         _mappedFileName += queueName;
+        _initialize = initialize;
         DataSize = capacityBytes;
         var totalSize = DataSize + HeaderSize;
-        Mmf = MemoryMappedFile.CreateOrOpen(_mappedFileName, totalSize, MemoryMappedFileAccess.ReadWrite);
-        Accessor = Mmf.CreateViewAccessor(0, totalSize, MemoryMappedFileAccess.ReadWrite);
+        _mmf = MemoryMappedFile.CreateOrOpen(_mappedFileName, totalSize, MemoryMappedFileAccess.ReadWrite);
+        _accessor = _mmf.CreateViewAccessor(0, totalSize, MemoryMappedFileAccess.ReadWrite);
 
-        Accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref BasePtr);
+        _accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref BasePtr);
 
         if (!initialize) return;
-        Accessor.Write(0, 0); // head
-        Accessor.Write(4, 0); // tail
+        _accessor.Write(0, 0); // head
+        _accessor.Write(4, 0); // tail
     }
 
-    public bool Enqueue(byte[] msgBytes)
+    public override bool Enqueue(byte[] msgBytes)
     {
         int msgLength = msgBytes.Length;
         int recordLength = sizeof(int) + msgLength; // one int for the length field plus the payload.
@@ -74,7 +75,7 @@ public unsafe class SpscQueue : IDisposable
         return true;
     }
 
-    public int Dequeue(ref byte[] buffer)
+    public override int Dequeue(ref byte[] buffer)
     {
         int* headPtr = (int*)BasePtr;
         int* tailPtr = (int*)(BasePtr + sizeof(int));
@@ -123,9 +124,10 @@ public unsafe class SpscQueue : IDisposable
 
     public void Dispose()
     {
-        Accessor.SafeMemoryMappedViewHandle.ReleasePointer();
-        Accessor?.Dispose();
-        Mmf?.Dispose();
+        _accessor.SafeMemoryMappedViewHandle.ReleasePointer();
+        //Accessor?.Dispose();
+        if (_initialize)
+            _mmf?.Dispose();
     }
 
     public int GetUsedSpace(int head = -1, int tail = -1)
