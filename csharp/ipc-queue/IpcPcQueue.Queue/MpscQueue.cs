@@ -16,7 +16,7 @@ public unsafe class MpscQueue : SpscQueue
     public override bool Enqueue(byte[] msgBytes)
     {
         int msgLength = msgBytes.Length;
-        int recordLength = 4 + msgLength; // 4 bytes for the length field plus the payload.
+        int recordLength = sizeof(int) + msgLength; // 4 bytes for the length field plus the payload.
 
         int* headPtr = (int*)BasePtr;
         int* tailPtr = (int*)(BasePtr + sizeof(int));
@@ -48,7 +48,7 @@ public unsafe class MpscQueue : SpscQueue
                 newTail = recordLength; // Funny, newTail will be the size of the record.
             }
             /*
-                reserves space by doing a CAS:  compares a value in a memory location with an expected value and,
+                reserves space by doing a CAS: compares a value in a memory location with an expected value and,
                 if they're equal, replaces it with a new value.
 
                 function CompareExchange(location, newValue, expectedValue):
@@ -60,12 +60,6 @@ public unsafe class MpscQueue : SpscQueue
         } while (Interlocked.CompareExchange(ref *tailPtr, newTail, tail) != tail);
 
         int msgOffset = tail;
-
-        var t = Volatile.Read(ref *((int*)(dataOffset + msgOffset)));
-        if (t != -2 && t != -1 && t != 0)
-        {
-            throw new ApplicationException($"current msgLength not -1 and -2 ({t}), head: {head}, tail: {tail}");
-        }
 
         if (msgOffset + recordLength > DataSize)
         {

@@ -4,9 +4,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IpcPcQueue.Benchmark", "Ipc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IpcPcQueue.Queue", "IpcPcQueue.Queue\IpcPcQueue.Queue.csproj", "{71DD9A34-031A-45C2-8021-81F6ABDC1D06}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IpcQueue.QuickStart.Consumer", "IpcQueue.QuickStart.Consumer\IpcQueue.QuickStart.Consumer.csproj", "{E698B39B-0DAF-4649-948A-E87238C00872}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IpcPcQueue.QuickStart.Consumer", "IpcPcQueue.QuickStart.Consumer\IpcPcQueue.QuickStart.Consumer.csproj", "{E698B39B-0DAF-4649-948A-E87238C00872}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IpcQueue.QuickStart.Producer", "IpcQueue.QuickStart.Producer\IpcQueue.QuickStart.Producer.csproj", "{69A99F1C-0C82-40C5-89C5-874A5833751A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IpcPcQueue.QuickStart.Producer", "IpcPcQueue.QuickStart.Producer\IpcPcQueue.QuickStart.Producer.csproj", "{69A99F1C-0C82-40C5-89C5-874A5833751A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
