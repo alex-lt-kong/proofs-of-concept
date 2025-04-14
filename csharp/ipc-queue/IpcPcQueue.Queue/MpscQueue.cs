@@ -1,22 +1,30 @@
-﻿using System.Diagnostics;
-using System.IO.MemoryMappedFiles;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace IpcPcQueue.Queue;
 
-public unsafe class MpscQueue : SpscQueue
+public unsafe class MpscQueue : SpscQueue, IQueue
 {
     private readonly int _maxProducerCount;
-    public MpscQueue(string queueName, bool initialize = false, int capacityBytes = 3210, int maxProducerCount = 8) :
-        base(queueName, initialize, capacityBytes)
+    
+    public MpscQueue(string queueName, bool ownership = false, int capacity = 1000, int maxMsgSize = 128, int maxProducerCount = 8): 
+        base(queueName, ownership, capacity, maxMsgSize)
     {
         _maxProducerCount = maxProducerCount;
+        QueueSize = capacity * (_maxElementSize + maxProducerCount + 1);
+        
     }
 
-    public override bool Enqueue(byte[] msgBytes)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="msgBytes">Enqueue() does not take ownership of msgBytes, feel free to reused it</param>
+    /// <returns></returns>
+    public new bool Enqueue(byte[] msgBytes)
     {
         int msgLength = msgBytes.Length;
-        int recordLength = sizeof(int) + msgLength; // 4 bytes for the length field plus the payload.
+        if (msgLength > MaxMsgSizeExclusive - 1)
+            throw new ArgumentException($"Message length {msgLength} exceeds max element size {MaxMsgSizeExclusive - 1}");
+        int elementLength = sizeof(int) + msgLength; // 4 bytes for the length field plus the payload.
 
         int* headPtr = (int*)BasePtr;
         int* tailPtr = (int*)(BasePtr + sizeof(int));
@@ -30,22 +38,26 @@ public unsafe class MpscQueue : SpscQueue
         do
         {
             tail = Volatile.Read(ref *tailPtr);
-            int used = GetUsedSpace(head, tail);
-            int free = DataSize - used;
+            int used = GetUsedBytes(head, tail);
+            int free = QueueSize - used;
 
-            if (free < recordLength * (_maxProducerCount + 1))
+            if (free < _maxElementSize * (_maxProducerCount + 1))
                 return false;
 
-            newTail = tail + recordLength;
-            if (newTail >= DataSize)
+            
+            if (tail + _maxElementSize >= QueueSize)
             {
-                if (DataSize - tail >= 4)
+                if (QueueSize - tail >= 4)
                 {
                     // Write a wrap marker (-1) to signal a jump to the start.
-                    *((int*)(dataOffset + tail)) = -1;
+                    *((int*)(dataOffset + tail)) = FLAG_HEAD_WRAPPED;
                 }
 
-                newTail = recordLength; // Funny, newTail will be the size of the record.
+                newTail = elementLength; // Funny, newTail will be the size of the record.
+            }
+            else
+            {
+                newTail = tail + elementLength;
             }
             /*
                 reserves space by doing a CAS: compares a value in a memory location with an expected value and,
@@ -61,12 +73,12 @@ public unsafe class MpscQueue : SpscQueue
 
         int msgOffset = tail;
 
-        if (msgOffset + recordLength > DataSize)
+        if (msgOffset + elementLength > QueueSize)
         {
-            if (DataSize - msgOffset >= sizeof(int))
+            if (QueueSize - msgOffset >= sizeof(int))
             {
                 // Write a wrap marker (-1) to signal a jump to the start.
-                *((int*)(dataOffset + msgOffset)) = -1;
+                *((int*)(dataOffset + msgOffset)) = FLAG_HEAD_WRAPPED;
             }
 
             msgOffset = 0; // Wrapped, new position starts at the beginning

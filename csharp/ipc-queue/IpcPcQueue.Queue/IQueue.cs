@@ -1,7 +1,11 @@
 ﻿namespace IpcPcQueue.Queue;
 
-public abstract class IQueue
+public interface IQueue
 {
-    public abstract bool Enqueue(byte[] msgBytes);
-    public abstract int Dequeue(ref byte[] buffer);
+    public void Init();
+    public bool Enqueue(byte[] msgBytes);
+    public int Dequeue(ref byte[] buffer);
+    public int GetHeadOffset();
+    public int GetTailOffset();
+    public int GetUsedBytes(int head = -1, int tail = -1);
 }
