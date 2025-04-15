@@ -50,7 +50,7 @@ public unsafe class MpscQueue : SpscQueue, IQueue
                     // Write a wrap marker (-1) to signal a jump to the start.
                     *(int*)(dataOffset + tail) = FLAG_HEAD_WRAPPED;
 
-                newTail = MaxElementSize; // Funny, newTail will be the size of the record.
+                newTail = MaxElementSize; // Funny, newTail will be MaxElementSize
             }
             else
             {
@@ -75,7 +75,12 @@ public unsafe class MpscQueue : SpscQueue, IQueue
         }
 
         // Write payload first.
-        Marshal.Copy(msgBytes, 0, new nint(dataOffset + msgOffset + sizeof(int)), msgLength);
+        //Marshal.Copy(msgBytes, 0, new nint(dataOffset + msgOffset + sizeof(int)), msgLength);
+        //Buffer.BlockCopy(msgBytes, 0, new nint(dataOffset), destinationOffset, count);
+        fixed (byte* sourcePtr = msgBytes) // Pin the source array
+        {
+            Buffer.MemoryCopy(sourcePtr, (dataOffset + msgOffset + sizeof(int)), msgLength, msgLength);
+        }
         // then write the length field.
         Volatile.Write(ref *(int*)(dataOffset + msgOffset), msgLength);
 

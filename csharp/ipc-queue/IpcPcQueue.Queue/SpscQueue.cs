@@ -67,8 +67,10 @@ public unsafe class SpscQueue : IQueue, IDisposable
         var headPtr = (int*)BasePtr;
         var tailPtr = (int*)(BasePtr + sizeof(int));
         var dataOffset = BasePtr + HeaderSize;
-
+        
         var head = Volatile.Read(ref *headPtr);
+        // C#'s equivalent of
+        // auto tail = tailPtr.load(std::memory_order_relaxed);
         var tail = Volatile.Read(ref *tailPtr);
 
         var used = GetUsedBytes(head, tail);
@@ -100,8 +102,10 @@ public unsafe class SpscQueue : IQueue, IDisposable
         var newTail = msgOffset + MaxElementSize;
         if (newTail >= QueueSize) newTail = 0;
 
+        // C#'s equivalent of
+        // tailPtr.store(newTail, std::memory_order_release);
         Volatile.Write(ref *tailPtr, newTail);
-        // Volatile.Write() is C#'s equivalent of tailPtr.store(newTail, std::memory_order_release);
+        
 
         return true;
     }
@@ -131,8 +135,11 @@ public unsafe class SpscQueue : IQueue, IDisposable
             return -1;
 
         Volatile.Write(ref *(int*)(queueBase + head), FLAG_MSG_UNCOMMITTED); // MPSC-specific, mark slot as uncommitted
-        Marshal.Copy(new nint(queueBase + head + 4), buffer, 0, msgLength);
-
+        //Marshal.Copy(new nint(queueBase + head + 4), buffer, 0, msgLength);
+        fixed (byte* destPtr = buffer)
+        {
+            Buffer.MemoryCopy((queueBase + head + 4), destPtr, msgLength, msgLength);
+        }
         // Advance the head pointer past the record.
         var newHead = head + MaxElementSize;
 
