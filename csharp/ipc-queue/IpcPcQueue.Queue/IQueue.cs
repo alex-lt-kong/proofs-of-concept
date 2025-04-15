@@ -5,7 +5,7 @@ public interface IQueue
     public void Init();
     public bool Enqueue(byte[] msgBytes);
     public int Dequeue(ref byte[] buffer);
-    public int GetHeadOffset();
-    public int GetTailOffset();
+    public int Head();
+    public int Tail();
     public int GetUsedBytes(int head = -1, int tail = -1);
 }

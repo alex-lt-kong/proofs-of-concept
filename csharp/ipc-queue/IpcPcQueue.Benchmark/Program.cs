@@ -116,13 +116,13 @@ namespace IpcPcQueue.Benchmark
             while (!evFlag.Value)
             {
                 //Thread.Sleep(1);
-                //Console.WriteLine($"Before Dequeue(), head: {queue.GetHeadIndex()}, tail: {queue.GetTailOffset()}, UsedSpace: {queue.GetUsedBytes()}");
+                //Console.WriteLine($"Before Dequeue(), head: {queue.GetHeadIndex()}, tail: {queue.Tail()}, UsedSpace: {queue.GetUsedBytes()}");
                 if (queue.Dequeue(ref msgBytes) <= 0)
                 {
                     continue;
                 }
 
-                //Console.WriteLine($"After  Dequeue(), head: {queue.GetHeadIndex()}, tail: {queue.GetTailOffset()}, UsedSpace: {queue.GetUsedBytes()}");
+                //Console.WriteLine($"After  Dequeue(), head: {queue.GetHeadIndex()}, tail: {queue.Tail()}, UsedSpace: {queue.GetUsedBytes()}");
                 unsafe
                 {
                     fixed (byte* bytePtr = msgBytes)
@@ -197,7 +197,7 @@ namespace IpcPcQueue.Benchmark
                 else
                 {
                     msgCount++;
-                    //    Console.WriteLine($"Enqueue()ed (head: {queue.GetHeadIndex()}, tail: {queue.GetTailOffset()}, msgCount: {msgCount}, UsedSpace: {queue.GetUsedBytes()})");
+                    //    Console.WriteLine($"Enqueue()ed (head: {queue.GetHeadIndex()}, tail: {queue.Tail()}, msgCount: {msgCount}, UsedSpace: {queue.GetUsedBytes()})");
                     idx = msgCount % 128;
                 }
             }
