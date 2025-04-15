@@ -1,4 +1,6 @@
-﻿namespace IpcPcQueue.Benchmark;
+﻿using System.Runtime.InteropServices;
+
+namespace IpcPcQueue.Benchmark;
 
 public class Reference<T>
 {
@@ -10,6 +12,13 @@ public class Reference<T>
     }
 }
 
+[StructLayout(LayoutKind.Sequential)]
+public struct MyPayload
+{
+    public Int64 UnixTimeTs;
+    public Int64 SeqNum;
+    public byte ProducerId; // byte is a one-byte long int. Meaning that we allow 256 producers at most
+}
 
 public static class Utils
 {

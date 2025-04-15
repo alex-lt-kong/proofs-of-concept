@@ -26,6 +26,16 @@ public unsafe class SpscQueue : IQueue, IDisposable
         _accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref BasePtr);
 
         if (!_ownership) return;
+        int* intPtr = (int*)BasePtr;
+
+        int numberOfIntegers = (int)(TotalSize / sizeof(int));
+
+        // Initialize entire memory block with -2
+        for (int i = 0; i < numberOfIntegers; i++)
+        {
+            intPtr[i] = -2;
+        }
+        
         _accessor.Write(0, 0); // head
         _accessor.Write(4, 0); // tail
     }
@@ -116,12 +126,11 @@ public unsafe class SpscQueue : IQueue, IDisposable
             head = 0;
             Volatile.Write(ref *headPtr, head);
             msgLength = *((int*)(queueBase + head));
-            if (msgLength == 0) return -1;
+            // if (msgLength == 0) return -1;
         }
         if (msgLength == FLAG_MSG_UNCOMMITTED) // MPSC-specific, slot allocated, but not committed yet
             return -1; 
-        if (msgLength == 0)
-            return -1;
+        //if (msgLength == 0) return -1;
 
         Volatile.Write(ref *((int*)(queueBase + head)), FLAG_MSG_UNCOMMITTED); // MPSC-specific, mark slot as uncommitted
         Marshal.Copy(new IntPtr(queueBase + head + 4), buffer, 0, msgLength);
@@ -130,10 +139,8 @@ public unsafe class SpscQueue : IQueue, IDisposable
         int newHead = head + 4 + msgLength;
         //Console.WriteLine($"msgLength: {msgLength}");
         // Volatile.Write(ref *((int*)(dataOffset + head)), FLAG_MSG_UNCOMMITTED);
-        if (newHead >= QueueSize)
-        {
-            newHead = 0;
-        }
+        // if (newHead >= QueueSize) newHead = 0;
+        
 
         Volatile.Write(ref *headPtr, newHead);
         return msgLength;
