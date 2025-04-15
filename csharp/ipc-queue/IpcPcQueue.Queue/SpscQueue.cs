@@ -5,7 +5,7 @@ namespace IpcPcQueue.Queue;
 
 public unsafe class SpscQueue : IQueue, IDisposable
 {
-    protected const int FLAG_HEAD_WRAPPED = -1;
+    protected const int FLAG_WRAPPED = -1;
     private const int FLAG_MSG_UNCOMMITTED = -2;
     private readonly string _mappedFileName = "Local\\IpcPcQueue_";
     protected const int HeaderSize = sizeof(int) * 2;
@@ -85,7 +85,7 @@ public unsafe class SpscQueue : IQueue, IDisposable
         {
             if (QueueSize - msgOffset >= sizeof(int))
                 // Write a wrap marker (-1) to signal a jump to the start.
-                *(int*)(dataOffset + msgOffset) = FLAG_HEAD_WRAPPED;
+                *(int*)(dataOffset + msgOffset) = FLAG_WRAPPED;
 
             msgOffset = 0;
         }
@@ -123,15 +123,14 @@ public unsafe class SpscQueue : IQueue, IDisposable
             return -1; // No message available.
 
         var msgLength = Volatile.Read(ref *(int*)(queueBase + head));
-        if (msgLength == FLAG_HEAD_WRAPPED)
+        if (msgLength == FLAG_WRAPPED)
         {
             head = 0;
             Volatile.Write(ref *headPtr, head);
             msgLength = *(int*)(queueBase + head);
         }
 
-        if (msgLength == FLAG_MSG_UNCOMMITTED || msgLength == -65537 || msgLength == -16777217 ||
-            msgLength == -257) // MPSC-specific, slot allocated, but not committed yet
+        if (msgLength == FLAG_MSG_UNCOMMITTED) // MPSC-specific, slot allocated, but not committed yet
             return -1;
 
         Volatile.Write(ref *(int*)(queueBase + head), FLAG_MSG_UNCOMMITTED); // MPSC-specific, mark slot as uncommitted

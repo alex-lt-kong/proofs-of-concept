@@ -48,7 +48,7 @@ public unsafe class MpscQueue : SpscQueue, IQueue
             {
                 if (QueueSize - tail >= 4)
                     // Write a wrap marker (-1) to signal a jump to the start.
-                    *(int*)(dataOffset + tail) = FLAG_HEAD_WRAPPED;
+                    *(int*)(dataOffset + tail) = FLAG_WRAPPED;
 
                 newTail = MaxElementSize; // Funny, newTail will be MaxElementSize
             }
@@ -70,7 +70,7 @@ public unsafe class MpscQueue : SpscQueue, IQueue
         {
             if (QueueSize - msgOffset >= sizeof(int))
                 // Write a wrap marker (-1) to signal a jump to the start.
-                *(int*)(dataOffset + msgOffset) = FLAG_HEAD_WRAPPED;
+                *(int*)(dataOffset + msgOffset) = FLAG_WRAPPED;
             msgOffset = 0; // Wrapped, new position starts at the beginning
         }
 
