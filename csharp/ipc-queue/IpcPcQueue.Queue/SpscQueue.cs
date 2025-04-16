@@ -16,7 +16,6 @@ public unsafe class SpscQueue : IQueue, IDisposable
     private readonly bool _ownership;
     private MemoryMappedFile _mmf;
     private MemoryMappedViewAccessor _accessor;
-    //private int TotalSize => QueueSize + HeaderSize;
 
     public void Init()
     {
@@ -39,7 +38,7 @@ public unsafe class SpscQueue : IQueue, IDisposable
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="queueName"></param>
+    /// <param name="queueName">Name of the queue, producer and consumer must use the same name</param>
     /// <param name="ownership">Whether this process owns the queue, i.e., it is responsible for the allocation and release the resources used by the queue</param>
     /// <param name="capacity">The lower bound of the max number of messages this queue can hold</param>
     /// <param name="maxMsgSize">The max size in bytes a message can have</param>
@@ -47,7 +46,7 @@ public unsafe class SpscQueue : IQueue, IDisposable
     {
         _ownership = ownership;
         _mappedFileName += queueName;
-        MaxMsgSize = maxMsgSize; // This should be opening range
+        MaxMsgSize = maxMsgSize;
         MaxElementSize = MaxMsgSize + sizeof(int); // 4 bytes for the length field plus the payload.
         MaxElementSize += sizeof(int) - MaxElementSize % sizeof(int); // maxElementSize must be aligned to 4 bytes
         QueueSize = capacity * (MaxElementSize + 1);
@@ -67,7 +66,7 @@ public unsafe class SpscQueue : IQueue, IDisposable
         var headPtr = (int*)BasePtr;
         var tailPtr = (int*)(BasePtr + sizeof(int));
         var dataOffset = BasePtr + HeaderSize;
-        
+
         var head = Volatile.Read(ref *headPtr);
         // C#'s equivalent of
         // auto tail = tailPtr.load(std::memory_order_relaxed);
@@ -105,11 +104,16 @@ public unsafe class SpscQueue : IQueue, IDisposable
         // C#'s equivalent of
         // tailPtr.store(newTail, std::memory_order_release);
         Volatile.Write(ref *tailPtr, newTail);
-        
+
 
         return true;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="buffer">Received message will be written to this buffer. It is caller's responsibility to make sure the buffer is large enough</param>
+    /// <returns>size of the message or -1 if no new message is available</returns>
     public int Dequeue(ref byte[] buffer)
     {
         var headPtr = (int*)BasePtr;
@@ -137,9 +141,10 @@ public unsafe class SpscQueue : IQueue, IDisposable
         //Marshal.Copy(new nint(queueBase + head + 4), buffer, 0, msgLength);
         fixed (byte* destPtr = buffer)
         {
-            Buffer.MemoryCopy((queueBase + head + 4), destPtr, msgLength, msgLength);
+            Buffer.MemoryCopy(queueBase + head + sizeof(int), destPtr, msgLength, msgLength);
         }
-        // Advance the head pointer past the record.
+
+        // Move head pointer to next element.
         var newHead = head + MaxElementSize;
 
         Volatile.Write(ref *headPtr, newHead);

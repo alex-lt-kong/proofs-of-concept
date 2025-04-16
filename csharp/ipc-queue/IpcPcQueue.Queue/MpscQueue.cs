@@ -6,6 +6,14 @@ public unsafe class MpscQueue : SpscQueue, IQueue
 {
     private readonly int _maxProducerCount;
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="queueName">Name of the queue, all producers and the consumer must use the same name</param>
+    /// <param name="ownership">Whether this process owns the queue, i.e., it is responsible for the allocation and release the resources used by the queue</param>
+    /// <param name="capacity">The lower bound of the max number of messages this queue can hold</param>
+    /// <param name="maxMsgSize">The max size in bytes a message can have</param>
+    /// <param name="maxProducerCount">The max number of producers that can write to this queue</param>
     public MpscQueue(string queueName, bool ownership = false, int capacity = 1000, int maxMsgSize = 128,
         int maxProducerCount = 8) :
         base(queueName, ownership, capacity, maxMsgSize)
@@ -46,7 +54,7 @@ public unsafe class MpscQueue : SpscQueue, IQueue
 
             if (tail + MaxElementSize >= QueueSize)
             {
-                if (QueueSize - tail >= 4)
+                if (QueueSize - tail >= sizeof(int))
                     // Write a wrap marker (-1) to signal a jump to the start.
                     *(int*)(dataOffset + tail) = FLAG_WRAPPED;
 

@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using Fclp;
+﻿using Fclp;
 using IpcPcQueue.Queue;
 
 
