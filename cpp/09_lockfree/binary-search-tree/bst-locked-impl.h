@@ -55,7 +55,7 @@ namespace PoC::LockFree {
                               left_result.end());
             }
             result.push_back(root->val);
-            std::print("{:>6}, ", root->val);
+            // std::print("{:>6}, ", root->val);
             if (root->right != nullptr) {
                 auto right_result = inorder_traversal(root->right);
                 result.insert(result.end(), right_result.begin(),
