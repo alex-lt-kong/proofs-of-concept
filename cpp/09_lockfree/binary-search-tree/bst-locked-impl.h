@@ -15,11 +15,9 @@ namespace PoC::LockFree {
             val(x), left(left), right(right) {}
     };
     class LockedBinarySearchTree {
-        static int find_successor(TreeNode *root, TreeNode *node) {}
-
     public:
         // insert() method passed all tests at
-        // https://leetcode.com/problems/insert-into-a-binary-search-tree/submissions/1618140923/
+        // https://leetcode.com/problems/insert-into-a-binary-search-tree/description/
         static TreeNode *insert(TreeNode *root, int val) {
             if (root == nullptr) {
                 root = new TreeNode(val);
@@ -44,7 +42,7 @@ namespace PoC::LockFree {
         }
 
         // inorder_traversal() method passed all tests at
-        // https://leetcode.com/problems/binary-tree-inorder-traversal/submissions/1618146714/
+        // https://leetcode.com/problems/binary-tree-inorder-traversal/description/
         // Note that this problem is inorder traversal only, not limited to BST
         static std::vector<int> inorder_traversal(TreeNode *root) {
             if (root == nullptr) {
@@ -67,7 +65,7 @@ namespace PoC::LockFree {
         }
 
         // search() method passed all tests at
-        // https://leetcode.com/problems/search-in-a-binary-search-tree/submissions/1618143004/
+        // https://leetcode.com/problems/search-in-a-binary-search-tree/description/
         static TreeNode *search(TreeNode *root, int val) {
             if (root == nullptr) {
                 return nullptr;
@@ -82,50 +80,48 @@ namespace PoC::LockFree {
         }
 
 
-        static void delete_node(TreeNode **root, int data) {
+        // delete_node() method passed all tests at
+        // https://leetcode.com/problems/delete-node-in-a-bst/description/
+        static bool delete_node(TreeNode **root, int data) {
             if (*root == nullptr) {
-                return;
+                return false;
             }
             if (data < (*root)->val) {
-                delete_node(&((*root)->left), data);
-            } else if (data > (*root)->val) {
-                delete_node(&((*root)->right), data);
-            } else if ((*root)->val == data) {
+                return delete_node(&((*root)->left), data);
+            }
+            if (data > (*root)->val) {
+                return delete_node(&((*root)->right), data);
+            }
+            if ((*root)->val == data) {
                 if ((*root)->left == nullptr && (*root)->right == nullptr) {
                     delete *root;
                     *root = nullptr;
-                } else if ((*root)->left == nullptr ||
-                           (*root)->right == nullptr) {
-                    std::print("Deleteing {} with one child, ", (*root)->val);
+                    return true;
+                }
+                if ((*root)->left == nullptr || (*root)->right == nullptr) {
                     // No need to look further, just promote the only child as
                     // parent
                     if ((*root)->left != nullptr) {
-                        std::println("left child");
                         TreeNode *new_root = (*root)->left;
                         delete *root;
                         *root = new_root;
                     } else {
-                        std::println("right child");
                         TreeNode *new_root = (*root)->right;
                         delete *root;
                         *root = new_root;
                     }
-                } else {
-                    std::println("Deleteing {} with both children",
-                                 (*root)->val);
-                    TreeNode **new_root = &((*root)->right);
-                    while ((*new_root)->left != nullptr) {
-                        new_root = &((*new_root)->left);
-                    }
-                    (*new_root)->left = (*root)->left;
-                    // delete *root;
-                    //(*root)->val = (*new_root)->val;
-                    *root = *new_root;
-                    // *root
+                    return true;
                 }
-            } else {
-                std::println("not found");
+                TreeNode **candidate_node = &((*root)->right);
+                while ((*candidate_node)->left != nullptr) {
+                    candidate_node = &((*candidate_node)->left);
+                }
+                // We are not really deleting root, we are just
+                // replacing its value and then deleting candidate_node
+                (*root)->val = (*candidate_node)->val;
+                return delete_node(candidate_node, (*candidate_node)->val);
             }
+            return false;
         }
 
         static void visualize_tree(TreeNode *root, int depth = 0,
@@ -142,6 +138,9 @@ namespace PoC::LockFree {
             // Print left subtree
             visualize_tree(root->left, depth + 1, '\\');
         }
+
+        // TODO:
+        // https://leetcode.com/problems/kth-smallest-element-in-a-bst/description/
     };
 } // namespace PoC::LockFree
 

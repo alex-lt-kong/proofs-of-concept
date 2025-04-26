@@ -3,7 +3,7 @@
 using namespace PoC::LockFree;
 
 int main() {
-    auto root = new TreeNode(0);
+    auto root = LockedBinarySearchTree::insert(nullptr, 0);
     LockedBinarySearchTree::insert(root, 1);
     LockedBinarySearchTree::insert(root, 2);
     LockedBinarySearchTree::insert(root, -1);
