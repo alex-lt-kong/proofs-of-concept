@@ -124,6 +124,32 @@ namespace PoC::LockFree {
             return false;
         }
 
+        // is_valid_bst() method passed all tests at
+        // https://leetcode.com/problems/validate-binary-search-tree/description/
+        static bool is_valid_bst(TreeNode *root, int64_t min = INT64_MIN,
+                                 int64_t max = INT64_MAX) {
+            if (root == nullptr)
+                return true;
+            if (root->val <= min || root->val >= max)
+                return false;
+
+            if (root->left != nullptr) {
+                if (root->left->val < root->val) {
+                    if (!is_valid_bst(root->left, min, root->val))
+                        return false;
+                } else {
+                    return false;
+                }
+            }
+            if (root->right != nullptr) {
+                if (root->val < root->right->val) {
+                    return is_valid_bst(root->right, root->val, max);
+                }
+                return false;
+            }
+            return true;
+        }
+
         static void visualize_tree(TreeNode *root, int depth = 0,
                                    char branch = ' ') {
             if (root == nullptr) {
