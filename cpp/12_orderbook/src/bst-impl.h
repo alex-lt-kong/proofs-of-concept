@@ -5,6 +5,7 @@
 #include <vector>
 
 namespace PoC::OrderBook {
+
     template<std::totally_ordered T>
     struct TreeNode {
         T val;
@@ -13,6 +14,7 @@ namespace PoC::OrderBook {
         TreeNode() : val(0), left(nullptr), right(nullptr) {}
         explicit TreeNode(T x) : val(x), left(nullptr), right(nullptr) {}
     };
+
     template<std::totally_ordered T>
     class BinarySearchTree {
     public:

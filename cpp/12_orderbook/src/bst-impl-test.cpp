@@ -7,7 +7,6 @@
 #include <random>
 #include <thread>
 
-// using namespace PoC::LockFree;
 using namespace PoC::OrderBook;
 using BST = BinarySearchTree<int>;
 
