@@ -70,3 +70,22 @@
     - If the node to be deleted has two children:
 
       ![](assets/images/bst-delete.gif "bst-insert.gif")
+
+## Heap
+
+- A Min-Heap is a Data Structure with the following
+  properties.[[2](https://www.geeksforgeeks.org/introduction-to-min-heap-data-structure/)]
+    - It is a complete Complete Binary Tree.
+    - The value of the root node must be the smallest among all its descendant
+      nodes and the same thing must be done for its left and right sub-tree
+      also.
+
+### Common operations
+
+- Insert
+
+  ![](assets/images/max-heap-insert.gif "max-heap-insert.gif")
+
+- Delete
+
+  ![](assets/images/max-heap-delete.gif "max-heap-insert.gif")
