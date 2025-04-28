@@ -35,8 +35,12 @@
           at the same price level, which is important for managing limit orders
           where multiple orders can exist at the same price.
 
+- For the time being, let's focus on the limit order book only. A limit order is
+  a type of order to buy or sell a security at a specific price or better.
+
 - https://quant.stackexchange.com/questions/63140/red-black-trees-for-limit-order-book
 - https://github.com/da-bao-jian/fast_limit_orderbook
+- [RGM Advisors Order Book Programming Problem](https://github.com/perrye2/LimitOrderBook/tree/master)
 
 ## Binary search tree
 
@@ -51,13 +55,13 @@
     - Left and right subtrees must also be Binary Search
       Trees.
 
-      ![](./assets/bst-illustration.png "bst-illustration.png")
+      ![](assets/images/bst-illustration.png "bst-illustration.png")
 
 ### Common operations
 
 - Insert
 
-  ![](./assets/bst-insert.gif "bst-insert.gif")
+  ![](assets/images/bst-insert.gif "bst-insert.gif")
 - Search (omitted for being too simple)
 
 - Delete
@@ -65,4 +69,4 @@
     - If the node to be deleted has one child: omitted
     - If the node to be deleted has two children:
 
-      ![](./assets/bst-delete.gif "bst-insert.gif")
+      ![](assets/images/bst-delete.gif "bst-insert.gif")
