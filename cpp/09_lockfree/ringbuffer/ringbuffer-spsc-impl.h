@@ -2,7 +2,6 @@
 #define INC_1P1C_RINGBUFFER_IMPL_H
 
 #include <atomic>
-#include <optional>
 #include <vector>
 
 /* Refer to
