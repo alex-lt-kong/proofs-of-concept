@@ -14,6 +14,8 @@ void int64_to_char_v1(int64_t in, char *buffer);
 
 void int64_to_char_v2(int64_t in, char *buffer);
 
+void int64_to_char_v3(int64_t in, char *buffer);
+
 #ifdef __cplusplus
 }
 #endif

@@ -55,6 +55,16 @@ static void BM_my_int64_to_char_v2(benchmark::State &state) {
 
 BENCHMARK(BM_my_int64_to_char_v2);
 
+static void BM_my_int64_to_char_v3(benchmark::State &state) {
+    for (auto _: state) {
+        size_t iter = 0;
+        char buffer[BUFFER_SIZE] = {0};
+        int64_to_char_v3(random_values[iter % random_values.size()], buffer);
+    }
+}
+
+BENCHMARK(BM_my_int64_to_char_v3);
+
 
 int main(int argc, char **argv) {
 

@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 
 void int64_to_char_v1(int64_t in, char *buffer) {
     if (in == 0) {
@@ -43,6 +44,30 @@ void int64_to_char_v2(int64_t in, char *buffer) {
     // Introduction of uint64_t is important, as -1 * INT64_MIN > INT64_MAX!
     uint64_t abs_in = is_negative ? ((uint64_t) (-(in + 1)) + 1)
                                   : (uint64_t) in;
+    size_t digit = (size_t) log10((double) abs_in) + 1;
+
+    if (is_negative) {
+        digit++;
+        buffer[0] = '-';
+    }
+    while (digit > 0 + is_negative) {
+        buffer[digit - 1] = abs_in % 10 + '0';
+        --digit;
+        abs_in /= 10;
+    }
+}
+
+void int64_to_char_v3(int64_t in, char *buffer) {
+    if (in == 0) {
+        buffer[0] = '0';
+        return;
+    }
+
+    int is_negative = (in < 0);
+    // Introduction of uint64_t is important, as -1 * INT64_MIN > INT64_MAX!
+    uint64_t abs_in = is_negative ? ((uint64_t) (-(in + 1)) + 1)
+                                  : (uint64_t) in;
+
     size_t digit = 1;
     if (abs_in >= 1000000000000000000)
         digit = 19;
@@ -85,7 +110,6 @@ void int64_to_char_v2(int64_t in, char *buffer) {
         digit++;
         buffer[0] = '-';
     }
-
     while (digit > 0 + is_negative) {
         buffer[digit - 1] = abs_in % 10 + '0';
         --digit;
