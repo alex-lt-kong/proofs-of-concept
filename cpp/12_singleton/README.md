@@ -55,3 +55,21 @@ BM_MySingletonMeyers         1467 ns         1467 ns       397656
 BM_MySingletonMutex        113541 ns       113480 ns         6142
 BM_MySingletonCallOnce      27693 ns        27681 ns        25330
 ```
+
+- `JH7110` + `clang 18.1.3`
+
+```
+Run on (4 X 1500 MHz CPU s)
+CPU Caches:
+L1 Instruction 32 KiB (x4)
+L1 Data 32 KiB (x4)
+L2 Unified 2048 KiB (x1)
+Load Average: 0.07, 0.05, 0.09
+***WARNING*** ASLR is enabled, the results may have unreproducible noise in them.
+-----------------------------------------------------------------
+Benchmark                       Time             CPU   Iterations
+-----------------------------------------------------------------
+BM_MySingletonMeyers         2691 ns         2690 ns       260199
+BM_MySingletonMutex        101447 ns       101442 ns         6898
+BM_MySingletonCallOnce      37621 ns        37618 ns        18605
+```
