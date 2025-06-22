@@ -1,17 +1,14 @@
 /* Copyright (C) 2024 Interactive Brokers LLC. All rights reserved. This code is
  * subject to the terms and conditions of the IB API Non-Commercial License or
  * the IB API Commercial License, as applicable. */
-
-#include "Contract.h"
-#include "ContractSamples.h"
-#include "EClientSocket.h"
+#include "TestCppClient.h"
+#include "twsapi/Contract.h"
+#include "twsapi/EClientSocket.h"
 
 #include <chrono>
 #include <cstdio>
 #include <spdlog/spdlog.h>
 #include <thread>
-
-#include "TestCppClient.h"
 
 const unsigned MAX_ATTEMPTS = 50;
 const unsigned SLEEP_TIME = 10;

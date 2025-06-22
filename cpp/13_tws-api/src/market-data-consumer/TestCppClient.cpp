@@ -4,13 +4,12 @@
     as applicable.*/
 
 #include "TestCppClient.h"
-#include "AccountSummaryTags.h"
-#include "CommonDefs.h"
-#include "Contract.h"
 #include "ContractSamples.h"
-#include "EClientSocket.h"
-#include "EPosixClientSocketPlatform.h"
 #include "Utils.h"
+#include "twsapi/CommonDefs.h"
+#include "twsapi/Contract.h"
+#include "twsapi/EClientSocket.h"
+#include "twsapi/EPosixClientSocketPlatform.h"
 
 #include <spdlog/spdlog.h>
 
@@ -84,241 +83,6 @@ void TestCppClient::setOptionalCapabilities(
 }
 
 void TestCppClient::processMessages() {
-  time_t now = time(NULL);
-
-  /*****************************************************************/
-  /* Below are few quick-to-test examples on the IB API functions grouped by
-   * functionality. Uncomment the relevant methods. */
-  /*****************************************************************/
-  switch (m_state) {
-  case ST_PNLSINGLE:
-    pnlSingleOperation();
-    break;
-  case ST_PNLSINGLE_ACK:
-    break;
-  case ST_PNL:
-    pnlOperation();
-    break;
-  case ST_PNL_ACK:
-    break;
-  case ST_TICKDATAOPERATION:
-    tickDataOperation();
-    break;
-  case ST_TICKDATAOPERATION_ACK:
-    break;
-  case ST_TICKOPTIONCOMPUTATIONOPERATION:
-    tickOptionComputationOperation();
-    break;
-  case ST_TICKOPTIONCOMPUTATIONOPERATION_ACK:
-    break;
-  case ST_DELAYEDTICKDATAOPERATION:
-    delayedTickDataOperation();
-    break;
-  case ST_DELAYEDTICKDATAOPERATION_ACK:
-    break;
-  case ST_MARKETDEPTHOPERATION:
-    marketDepthOperations();
-    break;
-  case ST_MARKETDEPTHOPERATION_ACK:
-    break;
-  case ST_REALTIMEBARS:
-    realTimeBars();
-    break;
-  case ST_REALTIMEBARS_ACK:
-    break;
-  case ST_MARKETDATATYPE:
-    marketDataType();
-    break;
-  case ST_MARKETDATATYPE_ACK:
-    break;
-  case ST_HISTORICALDATAREQUESTS:
-    historicalDataRequests();
-    break;
-  case ST_HISTORICALDATAREQUESTS_ACK:
-    break;
-  case ST_OPTIONSOPERATIONS:
-    optionsOperations();
-    break;
-  case ST_OPTIONSOPERATIONS_ACK:
-    break;
-  case ST_CONTRACTOPERATION:
-    contractOperations();
-    break;
-  case ST_CONTRACTOPERATION_ACK:
-    break;
-  case ST_MARKETSCANNERS:
-    marketScanners();
-    break;
-  case ST_MARKETSCANNERS_ACK:
-    break;
-  case ST_FUNDAMENTALS:
-    fundamentals();
-    break;
-  case ST_FUNDAMENTALS_ACK:
-    break;
-  case ST_BULLETINS:
-    bulletins();
-    break;
-  case ST_BULLETINS_ACK:
-    break;
-  case ST_ACCOUNTOPERATIONS:
-    accountOperations();
-    break;
-  case ST_ACCOUNTOPERATIONS_ACK:
-    break;
-  case ST_ORDEROPERATIONS:
-    orderOperations();
-    break;
-  case ST_ORDEROPERATIONS_ACK:
-    break;
-  case ST_OCASAMPLES:
-    ocaSamples();
-    break;
-  case ST_OCASAMPLES_ACK:
-    break;
-  case ST_CONDITIONSAMPLES:
-    conditionSamples();
-    break;
-  case ST_CONDITIONSAMPLES_ACK:
-    break;
-  case ST_BRACKETSAMPLES:
-    bracketSample();
-    break;
-  case ST_BRACKETSAMPLES_ACK:
-    break;
-  case ST_HEDGESAMPLES:
-    hedgeSample();
-    break;
-  case ST_HEDGESAMPLES_ACK:
-    break;
-  case ST_TESTALGOSAMPLES:
-    testAlgoSamples();
-    break;
-  case ST_TESTALGOSAMPLES_ACK:
-    break;
-  case ST_FAORDERSAMPLES:
-    financialAdvisorOrderSamples();
-    break;
-  case ST_FAORDERSAMPLES_ACK:
-    break;
-  case ST_FAOPERATIONS:
-    financialAdvisorOperations();
-    break;
-  case ST_FAOPERATIONS_ACK:
-    break;
-  case ST_DISPLAYGROUPS:
-    testDisplayGroups();
-    break;
-  case ST_DISPLAYGROUPS_ACK:
-    break;
-  case ST_MISCELANEOUS:
-    miscelaneous();
-    break;
-  case ST_MISCELANEOUS_ACK:
-    break;
-  case ST_FAMILYCODES:
-    reqFamilyCodes();
-    break;
-  case ST_FAMILYCODES_ACK:
-    break;
-  case ST_SYMBOLSAMPLES:
-    reqMatchingSymbols();
-    break;
-  case ST_SYMBOLSAMPLES_ACK:
-    break;
-  case ST_REQMKTDEPTHEXCHANGES:
-    reqMktDepthExchanges();
-    break;
-  case ST_REQMKTDEPTHEXCHANGES_ACK:
-    break;
-  case ST_REQNEWSTICKS:
-    reqNewsTicks();
-    break;
-  case ST_REQNEWSTICKS_ACK:
-    break;
-  case ST_REQSMARTCOMPONENTS:
-    reqSmartComponents();
-    break;
-  case ST_REQSMARTCOMPONENTS_ACK:
-    break;
-  case ST_NEWSPROVIDERS:
-    reqNewsProviders();
-    break;
-  case ST_NEWSPROVIDERS_ACK:
-    break;
-  case ST_REQNEWSARTICLE:
-    reqNewsArticle();
-    break;
-  case ST_REQNEWSARTICLE_ACK:
-    break;
-  case ST_REQHISTORICALNEWS:
-    reqHistoricalNews();
-    break;
-  case ST_REQHISTORICALNEWS_ACK:
-    break;
-  case ST_REQHEADTIMESTAMP:
-    reqHeadTimestamp();
-    break;
-  case ST_REQHISTOGRAMDATA:
-    reqHistogramData();
-    break;
-  case ST_REROUTECFD:
-    rerouteCFDOperations();
-    break;
-  case ST_MARKETRULE:
-    marketRuleOperations();
-    break;
-  case ST_CONTFUT:
-    continuousFuturesOperations();
-    break;
-  case ST_REQHISTORICALTICKS:
-    reqHistoricalTicks();
-    break;
-  case ST_REQHISTORICALTICKS_ACK:
-    break;
-  case ST_REQTICKBYTICKDATA:
-    reqTickByTickData();
-    break;
-  case ST_REQTICKBYTICKDATA_ACK:
-    break;
-  case ST_WHATIFSAMPLES:
-    whatIfSamples();
-    break;
-  case ST_WHATIFSAMPLES_ACK:
-    break;
-  case ST_IBKRATSSAMPLE:
-    ibkratsSample();
-    break;
-  case ST_IBKRATSSAMPLE_ACK:
-    break;
-  case ST_WSH:
-    wshCalendarOperations();
-    break;
-  case ST_WSH_ACK:
-    break;
-  case ST_RFQOPERATIONS:
-    rfqOperations();
-    break;
-  case ST_RFQOPERATIONS_ACK:
-    break;
-
-  case ST_PING:
-    reqCurrentTime();
-    break;
-  case ST_PING_ACK:
-    if (m_sleepDeadline < now) {
-      disconnect();
-      return;
-    }
-    break;
-  case ST_IDLE:
-    if (m_sleepDeadline < now) {
-      m_state = ST_PING;
-      return;
-    }
-    break;
-  }
-
   m_osSignal.waitForSignal();
   errno = 0;
   m_pReader->processMsgs();
@@ -666,70 +430,7 @@ void TestCppClient::fundamentals() {}
 
 void TestCppClient::bulletins() {}
 
-void TestCppClient::accountOperations() {
-  /*** Requesting managed accounts***/
-  //! [reqmanagedaccts]
-  m_pClient->reqManagedAccts();
-  //! [reqmanagedaccts]
-  std::this_thread::sleep_for(std::chrono::seconds(2));
-  /*** Requesting accounts' summary ***/
-  //! [reqaaccountsummary]
-  m_pClient->reqAccountSummary(9001, "All", AccountSummaryTags::getAllTags());
-  //! [reqaaccountsummary]
-  std::this_thread::sleep_for(std::chrono::seconds(2));
-  //! [reqaaccountsummaryledger]
-  m_pClient->reqAccountSummary(9002, "All", "$LEDGER");
-  //! [reqaaccountsummaryledger]
-  std::this_thread::sleep_for(std::chrono::seconds(2));
-  //! [reqaaccountsummaryledgercurrency]
-  m_pClient->reqAccountSummary(9003, "All", "$LEDGER:EUR");
-  //! [reqaaccountsummaryledgercurrency]
-  std::this_thread::sleep_for(std::chrono::seconds(2));
-  //! [reqaaccountsummaryledgerall]
-  m_pClient->reqAccountSummary(9004, "All", "$LEDGER:ALL");
-  //! [reqaaccountsummaryledgerall]
-  std::this_thread::sleep_for(std::chrono::seconds(2));
-  //! [cancelaaccountsummary]
-  m_pClient->cancelAccountSummary(9001);
-  m_pClient->cancelAccountSummary(9002);
-  m_pClient->cancelAccountSummary(9003);
-  m_pClient->cancelAccountSummary(9004);
-  //! [cancelaaccountsummary]
-  std::this_thread::sleep_for(std::chrono::seconds(2));
-  /*** Subscribing to an account's information. Only one at a time! ***/
-  //! [reqaaccountupdates]
-  m_pClient->reqAccountUpdates(true, "U150462");
-  //! [reqaaccountupdates]
-  std::this_thread::sleep_for(std::chrono::seconds(2));
-  //! [cancelaaccountupdates]
-  m_pClient->reqAccountUpdates(false, "U150462");
-  //! [cancelaaccountupdates]
-  std::this_thread::sleep_for(std::chrono::seconds(2));
-
-  //! [reqaaccountupdatesmulti]
-  m_pClient->reqAccountUpdatesMulti(9002, "U150462", "EUstocks", true);
-  //! [reqaaccountupdatesmulti]
-  std::this_thread::sleep_for(std::chrono::seconds(2));
-
-  /*** Requesting all accounts' positions. ***/
-  //! [reqpositions]
-  m_pClient->reqPositions();
-  //! [reqpositions]
-  std::this_thread::sleep_for(std::chrono::seconds(2));
-  //! [cancelpositions]
-  m_pClient->cancelPositions();
-  //! [cancelpositions]
-
-  //! [reqpositionsmulti]
-  m_pClient->reqPositionsMulti(9003, "U150462", "EUstocks");
-  //! [reqpositionsmulti]
-
-  //! [userinfo]
-  m_pClient->reqUserInfo(0);
-  //! [userinfo]
-
-  m_state = ST_ACCOUNTOPERATIONS_ACK;
-}
+void TestCppClient::accountOperations() {}
 
 void TestCppClient::orderOperations() {}
 
@@ -1339,96 +1040,10 @@ void TestCppClient::printContractMsg(const Contract &contract) {
 }
 
 void TestCppClient::printContractDetailsMsg(
-    const ContractDetails &contractDetails) {
-  printf("\tMarketName: %s\n", contractDetails.marketName.c_str());
-  printf("\tMinTick: %s\n",
-         Utils::doubleMaxString(contractDetails.minTick).c_str());
-  printf("\tPriceMagnifier: %s\n",
-         Utils::longMaxString(contractDetails.priceMagnifier).c_str());
-  printf("\tOrderTypes: %s\n", contractDetails.orderTypes.c_str());
-  printf("\tValidExchanges: %s\n", contractDetails.validExchanges.c_str());
-  printf("\tUnderConId: %s\n",
-         Utils::intMaxString(contractDetails.underConId).c_str());
-  printf("\tLongName: %s\n", contractDetails.longName.c_str());
-  printf("\tContractMonth: %s\n", contractDetails.contractMonth.c_str());
-  printf("\tIndystry: %s\n", contractDetails.industry.c_str());
-  printf("\tCategory: %s\n", contractDetails.category.c_str());
-  printf("\tSubCategory: %s\n", contractDetails.subcategory.c_str());
-  printf("\tTimeZoneId: %s\n", contractDetails.timeZoneId.c_str());
-  printf("\tTradingHours: %s\n", contractDetails.tradingHours.c_str());
-  printf("\tLiquidHours: %s\n", contractDetails.liquidHours.c_str());
-  printf("\tEvRule: %s\n", contractDetails.evRule.c_str());
-  printf("\tEvMultiplier: %s\n",
-         Utils::doubleMaxString(contractDetails.evMultiplier).c_str());
-  printf("\tAggGroup: %s\n",
-         Utils::intMaxString(contractDetails.aggGroup).c_str());
-  printf("\tUnderSymbol: %s\n", contractDetails.underSymbol.c_str());
-  printf("\tUnderSecType: %s\n", contractDetails.underSecType.c_str());
-  printf("\tMarketRuleIds: %s\n", contractDetails.marketRuleIds.c_str());
-  printf("\tRealExpirationDate: %s\n",
-         contractDetails.realExpirationDate.c_str());
-  printf("\tLastTradeTime: %s\n", contractDetails.lastTradeTime.c_str());
-  printf("\tStockType: %s\n", contractDetails.stockType.c_str());
-  printf("\tMinSize: %s\n",
-         DecimalFunctions::decimalStringToDisplay(contractDetails.minSize)
-             .c_str());
-  printf("\tSizeIncrement: %s\n",
-         DecimalFunctions::decimalStringToDisplay(contractDetails.sizeIncrement)
-             .c_str());
-  printf("\tSuggestedSizeIncrement: %s\n",
-         DecimalFunctions::decimalStringToDisplay(
-             contractDetails.suggestedSizeIncrement)
-             .c_str());
-  if (contractDetails.contract.secType == "FUND") {
-    printf("\tFund Data: \n");
-    printf("\t\tFundName: %s\n", contractDetails.fundName.c_str());
-    printf("\t\tFundFamily: %s\n", contractDetails.fundFamily.c_str());
-    printf("\t\tFundType: %s\n", contractDetails.fundType.c_str());
-    printf("\t\tFundFrontLoad: %s\n", contractDetails.fundFrontLoad.c_str());
-    printf("\t\tFundBackLoad: %s\n", contractDetails.fundBackLoad.c_str());
-    printf("\t\tFundBackLoadTimeInterval: %s\n",
-           contractDetails.fundBackLoadTimeInterval.c_str());
-    printf("\t\tFundManagementFee: %s\n",
-           contractDetails.fundManagementFee.c_str());
-    printf("\t\tFundClosed: %s\n", contractDetails.fundClosed ? "yes" : "no");
-    printf("\t\tFundClosedForNewInvestors: %s\n",
-           contractDetails.fundClosedForNewInvestors ? "yes" : "no");
-    printf("\t\tFundClosedForNewMoney: %s\n",
-           contractDetails.fundClosedForNewMoney ? "yes" : "no");
-    printf("\t\tFundNotifyAmount: %s\n",
-           contractDetails.fundNotifyAmount.c_str());
-    printf("\t\tFundMinimumInitialPurchase: %s\n",
-           contractDetails.fundMinimumInitialPurchase.c_str());
-    printf("\t\tFundSubsequentMinimumPurchase: %s\n",
-           contractDetails.fundSubsequentMinimumPurchase.c_str());
-    printf("\t\tFundBlueSkyStates: %s\n",
-           contractDetails.fundBlueSkyStates.c_str());
-    printf("\t\tFundBlueSkyTerritories: %s\n",
-           contractDetails.fundBlueSkyTerritories.c_str());
-    printf("\t\tFundDistributionPolicyIndicator: %s\n",
-           Utils::getFundDistributionPolicyIndicatorName(
-               contractDetails.fundDistributionPolicyIndicator)
-               .c_str());
-    printf("\t\tFundAssetType: %s\n",
-           Utils::getFundAssetTypeName(contractDetails.fundAssetType).c_str());
-  }
-  printContractDetailsSecIdList(contractDetails.secIdList);
-  printContractDetailsIneligibilityReasonList(
-      contractDetails.ineligibilityReasonList);
-}
+    const ContractDetails &contractDetails) {}
 
 void TestCppClient::printContractDetailsSecIdList(
-    const TagValueListSPtr &secIdList) {
-  const int secIdListCount = secIdList.get() ? secIdList->size() : 0;
-  if (secIdListCount > 0) {
-    printf("\tSecIdList: {");
-    for (int i = 0; i < secIdListCount; ++i) {
-      const TagValue *tagValue = ((*secIdList)[i]).get();
-      printf("%s=%s;", tagValue->tag.c_str(), tagValue->value.c_str());
-    }
-    printf("}\n");
-  }
-}
+    const TagValueListSPtr &secIdList) {}
 
 void TestCppClient::printContractDetailsIneligibilityReasonList(
     const IneligibilityReasonListSPtr &ineligibilityReasonList) {
@@ -1903,31 +1518,7 @@ void TestCppClient::newsProviders(
 
 //! [newsArticle]
 void TestCppClient::newsArticle(int requestId, int articleType,
-                                const std::string &articleText) {
-  printf("News Article. Request Id: %d, Article Type: %d\n", requestId,
-         articleType);
-  if (articleType == 0) {
-    printf("News Article Text (text or html): %s\n", articleText.c_str());
-  } else if (articleType == 1) {
-    std::string path;
-#if defined(IB_WIN32)
-    TCHAR s[200];
-    GetCurrentDirectory(200, s);
-    path = s + std::string("\\MST$06f53098.pdf");
-#elif defined(IB_POSIX)
-    char s[1024];
-    if (getcwd(s, sizeof(s)) == NULL) {
-      printf("getcwd() error\n");
-      return;
-    }
-    path = s + std::string("/MST$06f53098.pdf");
-#endif
-    std::vector<std::uint8_t> bytes = Utils::base64_decode(articleText);
-    std::ofstream outfile(path, std::ios::out | std::ios::binary);
-    outfile.write((const char *)bytes.data(), bytes.size());
-    printf("Binary/pdf article was saved to: %s\n", path.c_str());
-  }
-}
+                                const std::string &articleText) {}
 //! [newsArticle]
 
 //! [historicalNews]

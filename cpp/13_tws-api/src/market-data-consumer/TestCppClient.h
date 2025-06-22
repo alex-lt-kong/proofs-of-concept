@@ -6,9 +6,9 @@
 #ifndef TWS_API_SAMPLES_TESTCPPCLIENT_TESTCPPCLIENT_H
 #define TWS_API_SAMPLES_TESTCPPCLIENT_TESTCPPCLIENT_H
 
-#include "EReader.h"
-#include "EReaderOSSignal.h"
-#include "EWrapper.h"
+#include "twsapi/EReader.h"
+#include "twsapi/EReaderOSSignal.h"
+#include "twsapi/EWrapper.h"
 
 #include <memory>
 #include <vector>
@@ -146,7 +146,7 @@ private:
   void bracketSample();
   void hedgeSample();
   void contractOperations();
-  void marketScanners();
+  static void marketScanners();
   void fundamentals();
   void bulletins();
   void testAlgoSamples();
@@ -178,7 +178,7 @@ private:
 
 public:
 // events
-#include "EWrapper_prototypes.h"
+#include "twsapi/EWrapper_prototypes.h"
 
 private:
   void printContractMsg(const Contract &contract);
