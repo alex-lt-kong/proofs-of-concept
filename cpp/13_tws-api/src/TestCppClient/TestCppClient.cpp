@@ -2827,29 +2827,18 @@ void TestCppClient::tickByTickAllLast(int reqId, int tickType, time_t time,
                                       const TickAttribLast &tickAttribLast,
                                       const std::string &exchange,
                                       const std::string &specialConditions) {
-    char timeStr[80];
-#if defined(IB_WIN32)
-    ctime_s(timeStr, sizeof(timeStr), &time);
-#else
-    ctime_r(&time, timeStr);
-#endif
-    spdlog::info("Tick-By-Tick. ReqId: {}, TickType: {}, Time: {}, Price: {}, "
-                 "Size: {}, PastLimit: {}, Unreported: {}, Exchange: {}, "
-                 "SpecialConditions:{}\n",
-                 reqId, (tickType == 1 ? "Last" : "AllLast"), timeStr,
-                 Utils::doubleMaxString(price).c_str(),
-                 DecimalFunctions::decimalStringToDisplay(size).c_str(),
-                 tickAttribLast.pastLimit, tickAttribLast.unreported,
-                 exchange.c_str(), specialConditions.c_str());
-    printf("Tick-By-Tick. ReqId: %d, TickType: %s, Time: %s, Price: %s, Size: "
-           "%s, "
-           "PastLimit: %d, Unreported: %d, Exchange: %s, "
-           "SpecialConditions:%s\n",
-           reqId, (tickType == 1 ? "Last" : "AllLast"), timeStr,
-           Utils::doubleMaxString(price).c_str(),
-           DecimalFunctions::decimalStringToDisplay(size).c_str(),
-           tickAttribLast.pastLimit, tickAttribLast.unreported,
-           exchange.c_str(), specialConditions.c_str());
+    std::tm tm{};
+    localtime_r(&time, &tm);
+    const std::ostringstream oss;
+    spdlog::info(
+            "tickByTickAllLast() ReqId: {}, TickType: {}, Time: {}, Price: {}, "
+            "Size: {}, PastLimit: {}, Unreported: {}, Exchange: {}, "
+            "SpecialConditions:{}\n",
+            reqId, (tickType == 1 ? "Last" : "AllLast"), oss.str(),
+            Utils::doubleMaxString(price).c_str(),
+            DecimalFunctions::decimalStringToDisplay(size).c_str(),
+            tickAttribLast.pastLimit, tickAttribLast.unreported,
+            exchange.c_str(), specialConditions.c_str());
 }
 //! [tickbytickalllast]
 
@@ -2858,7 +2847,6 @@ void TestCppClient::tickByTickBidAsk(int reqId, time_t time, double bidPrice,
                                      double askPrice, Decimal bidSize,
                                      Decimal askSize,
                                      const TickAttribBidAsk &tickAttribBidAsk) {
-
     std::tm tm{};
     localtime_r(&time, &tm);
     std::ostringstream oss;
@@ -2876,17 +2864,15 @@ void TestCppClient::tickByTickBidAsk(int reqId, time_t time, double bidPrice,
 //! [tickbytickbidask]
 
 //! [tickbytickmidpoint]
-void TestCppClient::tickByTickMidPoint(int reqId, time_t time,
-                                       double midPoint) {
-    char timeStr[80];
-#if defined(IB_WIN32)
-    ctime_s(timeStr, sizeof(timeStr), &time);
-#else
-    ctime_r(&time, timeStr);
-#endif
-    printf("Tick-By-Tick. ReqId: %d, TickType: MidPoint, Time: %s, MidPoint: "
-           "%s\n",
-           reqId, timeStr, Utils::doubleMaxString(midPoint).c_str());
+void TestCppClient::tickByTickMidPoint(int reqId, const time_t time,
+                                       const double midPoint) {
+    std::tm tm{};
+    localtime_r(&time, &tm);
+    std::ostringstream oss;
+    oss << std::put_time(&tm, "%Y-%m-%dT%H:%M:%S%z");
+    spdlog::info("tickByTickMidPoint(): ReqId: {}, TickType: MidPoint, Time: "
+                 "{}, MidPoint: {}",
+                 reqId, oss.str(), Utils::doubleMaxString(midPoint));
 }
 //! [tickbytickmidpoint]
 

@@ -59,28 +59,28 @@ int main(int argc, char **argv) {
         contract.currency = "USD";
         contract.exchange = "SMART";
 
-        /*
-          contract.symbol = "EUR";
-          contract.secType = "CASH";  // For Forex
-          contract.currency = "USD";
-          contract.exchange = "IDEALPRO";*/
-        contract.symbol = "BTC";
-        contract.secType = "CRYPTO";
-        contract.exchange = "OSL";
-        contract.currency = "USD";
         // Set market data type to DELAYED (3)
         client.m_pClient->reqMarketDataType(3);
+        Contract btc;
+        btc.symbol = "BTC";
+        btc.secType = "CRYPTO";
+        btc.exchange = "OSL";
+        btc.currency = "USD";
         // Request market data
         // Parameters: tickerId (unique identifier), contract, genericTickList,
         // snapshot, regulatorySnapshot
         // client.m_pClient->reqMktData(1, contract, "", false, false,
         // TagValueListSPtr());
-        client.m_pClient->reqTickByTickData(1, contract, "BidAsk", 10, false);
-        // client.m_pClient->allowRedirect()
+        Contract eth;
+        eth.symbol = "ETH";
+        eth.secType = "CRYPTO";
+        eth.exchange = "OSL";
+        eth.currency = "USD";
+        // https://www.interactivebrokers.com/campus/ibkr-api-page/twsapi-doc/#request-tick-data
+        // client.m_pClient->reqTickByTickData(1, btc, "BidAsk", 10, false);
+        // client.m_pClient->reqTickByTickData(2, eth, "MidPoint", 10, false);
         while (client.isConnected()) {
-            // client.tickDataOperation();
             client.processMessages();
-            spdlog::info("client.processMessages()");
         }
         if (attempt >= MAX_ATTEMPTS) {
             break;
