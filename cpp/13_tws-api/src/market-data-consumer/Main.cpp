@@ -1,10 +1,10 @@
 /* Copyright (C) 2024 Interactive Brokers LLC. All rights reserved. This code is
  * subject to the terms and conditions of the IB API Non-Commercial License or
  * the IB API Commercial License, as applicable. */
+#include "ContractSamples.h"
 #include "TestCppClient.h"
 #include "twsapi/Contract.h"
 #include "twsapi/EClientSocket.h"
-#include "ContractSamples.h"
 
 #include <chrono>
 #include <cstdio>
@@ -49,12 +49,6 @@ int main(int argc, char **argv) {
     }
 
     client.connect(host, port, clientId);
-    // Define a contract - Example for Tesla stock
-    Contract contract;
-    contract.symbol = "TSLA";
-    contract.secType = "STK";
-    contract.currency = "USD";
-    contract.exchange = "SMART";
 
     // Set market data type to DELAYED (3)
     client.m_pClient->reqMarketDataType(3);
@@ -63,31 +57,35 @@ int main(int argc, char **argv) {
     btc.secType = "CRYPTO";
     btc.exchange = "OSL";
     btc.currency = "USD";
-    // Request market data
-    // Parameters: tickerId (unique identifier), contract, genericTickList,
-    // snapshot, regulatorySnapshot
-    // client.m_pClient->reqMktData(1, contract, "", false, false,
-    // TagValueListSPtr());
     Contract eth;
     eth.symbol = "ETH";
     eth.secType = "CRYPTO";
     eth.exchange = "OSL";
     eth.currency = "USD";
+    int reqId = 0;
     // https://www.interactivebrokers.com/campus/ibkr-api-page/twsapi-doc/#request-tick-data
-    //client.m_pClient->reqTickByTickData(1, btc, "BidAsk", 10, false);
-    //client.m_pClient->reqTickByTickData(2, eth, "MidPoint", 10, false);
-    client.m_pClient->reqTickByTickData(3, ContractSamples::HKStk0005(), "Last", 10, false);
-    client.m_pClient->reqTickByTickData(4, ContractSamples::HKStk3011(), "MidPoint", 10, false);
-    // working
-    client.m_pClient->reqMktData(5, ContractSamples::TWStkTsmc(), "", false, false, TagValueListSPtr());
-    // working
-    client.m_pClient->reqMktData(6, ContractSamples::CNStkPingAn(), "", false, false, TagValueListSPtr());
-    client.m_pClient->reqMktData(7, ContractSamples::CNStkWesternMining(), "", false, false, TagValueListSPtr());
-    // working
-    client.m_pClient->reqMktData(8, ContractSamples::CNStkDongfangPrecision(), "", false, false, TagValueListSPtr());
-    client.m_pClient->reqMktData(9, ContractSamples::EUStkAsml(), "", false, false, TagValueListSPtr());
-    // working
-    client.m_pClient->reqMktData(10, ContractSamples::UKStkVod(), "", false, false, TagValueListSPtr());
+    // client.m_pClient->reqTickByTickData(1, btc, "BidAsk", 10, false);
+    // client.m_pClient->reqTickByTickData(2, eth, "MidPoint", 10, false);
+    client.m_subscribedContracts.push_back(ContractSamples::HKStk0005());
+    client.m_subscribedContracts.push_back(ContractSamples::HKStk3011());
+    client.m_subscribedContracts.push_back(ContractSamples::TWStkTsmc());
+    client.m_subscribedContracts.push_back(ContractSamples::CNStkPingAn());
+    client.m_subscribedContracts.push_back(
+        ContractSamples::CNStkWesternMining());
+    client.m_subscribedContracts.push_back(
+        ContractSamples::CNStkDongfangPrecision());
+    client.m_subscribedContracts.push_back(ContractSamples::EUStkAsml());
+    client.m_subscribedContracts.push_back(ContractSamples::UKStkVod());
+    client.m_subscribedContracts.push_back(ContractSamples::UsStkNvda());
+    client.m_subscribedContracts.push_back(ContractSamples::UsEtfQqq());
+    client.m_subscribedContracts.push_back(ContractSamples::UsEtfBoxx());
+    client.m_subscribedContracts.push_back(ContractSamples::UsEtfEzoo());
+    for (int i = 0; i < client.m_subscribedContracts.size(); ++i) {
+      spdlog::info("Requesting market data for contract: {} (id: {})",
+                   client.m_subscribedContracts[i].symbol, i);
+      client.m_pClient->reqMktData(i, client.m_subscribedContracts[i], "",
+                                   false, false, TagValueListSPtr());
+    }
     while (client.isConnected()) {
       client.processMessages();
     }

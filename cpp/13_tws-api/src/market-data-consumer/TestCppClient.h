@@ -11,6 +11,7 @@
 #include "twsapi/EWrapper.h"
 
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 class EClientSocket;
@@ -122,8 +123,6 @@ public:
   void setConnectOptions(const std::string &);
   void setOptionalCapabilities(const std::string &);
   void processMessages();
-
-public:
   bool connect(const char *host, int port, int clientId = 0);
   void disconnect() const;
   bool isConnected() const;
@@ -200,6 +199,7 @@ public:
   std::unique_ptr<EReader> m_pReader;
   bool m_extraAuth;
   std::string m_bboExchange;
+  std::vector<Contract> m_subscribedContracts;
 };
 
 #endif

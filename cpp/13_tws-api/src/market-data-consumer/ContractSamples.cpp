@@ -225,24 +225,43 @@ Contract ContractSamples::OptionAtIse() {
   return contract;
 }
 
-Contract ContractSamples::USStock() {
+Contract ContractSamples::UsStkNvda() {
   //! [stkcontract]
   Contract contract;
-  contract.symbol = "SPY";
+  contract.symbol = "NVDA";
   contract.secType = "STK";
   contract.currency = "USD";
-  contract.exchange = "ARCA";
+  contract.exchange = "NASDAQ";
   //! [stkcontract]
   return contract;
 }
 
-Contract ContractSamples::etf() {
+Contract ContractSamples::UsEtfQqq() {
   //! [etfcontract]
   Contract contract;
   contract.symbol = "QQQ";
   contract.secType = "STK";
   contract.currency = "USD";
+  contract.exchange = "NASDAQ";
+  //! [etfcontract]
+  return contract;
+}
+Contract ContractSamples::UsEtfEzoo() {
+  Contract contract;
+  contract.symbol = "EZOO";
+  contract.secType = "STK";
+  contract.currency = "USD";
   contract.exchange = "SMART";
+  return contract;
+}
+
+Contract ContractSamples::UsEtfBoxx() {
+  //! [etfcontract]
+  Contract contract;
+  contract.symbol = "BOXX";
+  contract.secType = "STK";
+  contract.currency = "USD";
+  contract.exchange = "BATS";
   //! [etfcontract]
   return contract;
 }
@@ -746,7 +765,7 @@ Contract ContractSamples::JefferiesContract() {
   contract.symbol = "AAPL";
   contract.secType = "STK";
   contract.exchange = "JEFFALGO"; // must be direct-routed to JEFALGO
-  contract.currency = "USD"; // only available for US stocks
+  contract.currency = "USD";      // only available for US stocks
   //! [jefferies_contract]
   return contract;
 }
