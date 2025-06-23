@@ -4,6 +4,7 @@
 #include "TestCppClient.h"
 #include "twsapi/Contract.h"
 #include "twsapi/EClientSocket.h"
+#include "ContractSamples.h"
 
 #include <chrono>
 #include <cstdio>
@@ -73,8 +74,20 @@ int main(int argc, char **argv) {
     eth.exchange = "OSL";
     eth.currency = "USD";
     // https://www.interactivebrokers.com/campus/ibkr-api-page/twsapi-doc/#request-tick-data
-    client.m_pClient->reqTickByTickData(1, btc, "BidAsk", 10, false);
-    client.m_pClient->reqTickByTickData(2, eth, "MidPoint", 10, false);
+    //client.m_pClient->reqTickByTickData(1, btc, "BidAsk", 10, false);
+    //client.m_pClient->reqTickByTickData(2, eth, "MidPoint", 10, false);
+    client.m_pClient->reqTickByTickData(3, ContractSamples::HKStk0005(), "Last", 10, false);
+    client.m_pClient->reqTickByTickData(4, ContractSamples::HKStk3011(), "MidPoint", 10, false);
+    // working
+    client.m_pClient->reqMktData(5, ContractSamples::TWStkTsmc(), "", false, false, TagValueListSPtr());
+    // working
+    client.m_pClient->reqMktData(6, ContractSamples::CNStkPingAn(), "", false, false, TagValueListSPtr());
+    client.m_pClient->reqMktData(7, ContractSamples::CNStkWesternMining(), "", false, false, TagValueListSPtr());
+    // working
+    client.m_pClient->reqMktData(8, ContractSamples::CNStkDongfangPrecision(), "", false, false, TagValueListSPtr());
+    client.m_pClient->reqMktData(9, ContractSamples::EUStkAsml(), "", false, false, TagValueListSPtr());
+    // working
+    client.m_pClient->reqMktData(10, ContractSamples::UKStkVod(), "", false, false, TagValueListSPtr());
     while (client.isConnected()) {
       client.processMessages();
     }

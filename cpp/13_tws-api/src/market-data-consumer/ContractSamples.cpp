@@ -60,6 +60,62 @@ Contract ContractSamples::HKStk() {
   return contract;
 }
 
+Contract ContractSamples::HKStk3011() {
+  //! [1@SEHK contract]
+  Contract contract;
+  contract.symbol = "3011";
+  contract.secType = "STK";
+  contract.currency = "HKD";
+  contract.exchange = "SEHK";
+  //! [1@SEHK contract]
+  return contract;
+}
+
+Contract ContractSamples::HKStk0005() {
+  Contract contract;
+  contract.symbol = "5";
+  contract.secType = "STK";
+  contract.currency = "HKD";
+  contract.exchange = "SEHK";
+  return contract;
+}
+
+Contract ContractSamples::CNStkPingAn() {
+  Contract contract;
+  contract.symbol = "601318";
+  contract.secType = "STK";
+  contract.currency = "CNH";
+  contract.exchange = "SEHKNTL";
+  return contract;
+}
+
+Contract ContractSamples::CNStkWesternMining() {
+  Contract contract;
+  contract.symbol = "002145";
+  contract.secType = "STK";
+  contract.currency = "CNH";
+  contract.exchange = "SEHKSZSE";
+  return contract;
+}
+
+Contract ContractSamples::CNStkDongfangPrecision() {
+  Contract contract;
+  contract.symbol = "002611";
+  contract.secType = "STK";
+  contract.currency = "CNH";
+  contract.exchange = "SEHKSZSE";
+  return contract;
+}
+
+Contract ContractSamples::TWStkTsmc() {
+  Contract contract;
+  contract.symbol = "2330";
+  contract.secType = "STK";
+  contract.currency = "TWD";
+  contract.exchange = "TWSE";
+  return contract;
+}
+
 Contract ContractSamples::EurGbpFx() {
   //! [cashcontract]
   Contract contract;
@@ -133,6 +189,26 @@ Contract ContractSamples::EuropeanStock() {
   contract.currency = "EUR";
   contract.exchange = "SMART";
   contract.primaryExchange = "HEX";
+  return contract;
+}
+
+Contract ContractSamples::EUStkAsml() {
+  Contract contract;
+  contract.symbol = "ASML";
+  contract.secType = "STK";
+  contract.currency = "USD";
+  contract.exchange = "SMART";
+  contract.primaryExchange = "NASDAQ";
+  return contract;
+}
+
+Contract ContractSamples::UKStkVod() {
+  Contract contract;
+  contract.symbol = "VOD";
+  contract.secType = "STK";
+  contract.currency = "GBP";
+  contract.exchange = "SMART";
+  contract.primaryExchange = "LSE";
   return contract;
 }
 
@@ -554,7 +630,7 @@ Contract ContractSamples::SmartFutureComboContract() {
   //! [smartfuturespread]
   Contract contract;
   contract.symbol = "WTI"; // WTI,COIL spread. Symbol can be defined as first
-                           // leg symbol ("WTI") or currency ("USD").
+  // leg symbol ("WTI") or currency ("USD").
   contract.secType = "BAG";
   contract.currency = "USD";
   contract.exchange = "SMART";
@@ -640,7 +716,7 @@ Contract ContractSamples::FLYbroadtapeNewsFeed() {
   contract.symbol = "FLY:FLY_ALL"; // BroadTape All News
   contract.secType = "NEWS";
   contract.exchange = "FLY"; // Fly on the Wall
-                             //! [newscontractfly]
+  //! [newscontractfly]
   return contract;
 }
 
@@ -670,7 +746,7 @@ Contract ContractSamples::JefferiesContract() {
   contract.symbol = "AAPL";
   contract.secType = "STK";
   contract.exchange = "JEFFALGO"; // must be direct-routed to JEFALGO
-  contract.currency = "USD";      // only available for US stocks
+  contract.currency = "USD"; // only available for US stocks
   //! [jefferies_contract]
   return contract;
 }

@@ -9,7 +9,7 @@ find_package(spdlog CONFIG REQUIRED)
 
 file(GLOB SOURCES "*.cpp")
 
-link_directories(${CMAKE_SOURCE_DIR}/lib)
+#link_directories(${CMAKE_SOURCE_DIR}/lib)
 
 add_executable(market-data-consumer ${SOURCES})
 target_link_libraries(market-data-consumer PRIVATE spdlog::spdlog Threads::Threads)

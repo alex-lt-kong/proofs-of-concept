@@ -42,7 +42,8 @@ sudo cmake --install ./
 ### Build `Intel Decimal Floating Point Library`
 
 - Refer to `./twsapi_macunix.1030.01/IBJts/source/cppclient/Intel_lib_build.txt`
-- Copy the artifact `libbid.a` to a directory that CMake can link.
+- Copy the artifact to a directory that ld can find
+    - one simple way is to copy `libbid.so` to whereever `cmake --install` installs libtwsapi.so to (e.g., `/usr/local/lib/`)
 
 ### TestCppClient
 
