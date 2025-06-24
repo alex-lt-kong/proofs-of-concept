@@ -9,131 +9,144 @@ struct Contract;
 
 class ContractSamples {
 public:
-  static Contract IBMBond();
+    static Contract IBMBond();
 
-  static Contract IBKRStk();
+    static Contract IBKRStk();
 
-  static Contract HKStk();
+    static Contract HKStk();
 
-  static Contract HKStk3011();
+    static Contract HKStk3011();
 
-  static Contract HKStk0005();
+    static Contract HKStk0005();
 
-  static Contract CNStkPingAn();
+    static Contract CNStkPingAn();
 
-  static Contract CNStkWesternMining();
+    static Contract CNStkWesternMining();
 
-  static Contract CNStkDongfangPrecision();
+    static Contract CNStkDongfangPrecision();
 
-  static Contract TWStkTsmc();
+    static Contract JPStkToyota();
 
-  static Contract EurGbpFx();
+    static Contract TWStkTsmc();
 
-  static Contract Index();
+    static Contract FxUsdCnh();
 
-  static Contract CFD();
+    static Contract FxUsdHkd();
 
-  static Contract USStockCFD();
+    static Contract FxEurUsd();
 
-  static Contract EuropeanStockCFD();
+    static Contract EurGbpFx();
 
-  static Contract CashCFD();
+    static Contract Index();
 
-  static Contract EuropeanStock();
+    static Contract IndexHsi();
 
-  static Contract EUStkAsml();
+    static Contract IndexN225();
 
-  static Contract UKStkVod();
+    static Contract CFD();
 
-  static Contract OptionAtIse();
+    static Contract USStockCFD();
 
-  static Contract UsStkNvda();
+    static Contract EuropeanStockCFD();
 
-  static Contract UsEtfQqq();
+    static Contract CashCFD();
 
-  static Contract UsEtfBoxx();
-  static Contract UsEtfEzoo();
+    static Contract EuropeanStock();
 
-  static Contract USStockAtSmart();
+    static Contract EUStkAsml();
 
-  static Contract IBMUSStockAtSmart();
+    static Contract UKStkVod();
 
-  static Contract USStockWithPrimaryExch();
+    static Contract OptionAtIse();
 
-  static Contract BondWithCusip();
+    static Contract UsStkNvda();
 
-  static Contract Bond();
+    static Contract UsEtfQqq();
 
-  static Contract MutualFund();
+    static Contract UsEtfBoxx();
 
-  static Contract Commodity();
+    static Contract UsEtfEzoo();
 
-  static Contract USOptionContract();
+    static Contract USStockAtSmart();
 
-  static Contract OptionAtBox();
+    static Contract IBMUSStockAtSmart();
 
-  static Contract OptionWithTradingClass();
+    static Contract USStockWithPrimaryExch();
 
-  static Contract OptionWithLocalSymbol();
+    static Contract BondWithCusip();
 
-  static Contract DutchWarrant();
+    static Contract Bond();
 
-  static Contract SimpleFuture();
+    static Contract MutualFund();
 
-  static Contract FutureWithLocalSymbol();
+    static Contract Commodity();
 
-  static Contract FutureWithMultiplier();
+    static Contract USOptionContract();
 
-  static Contract WrongContract();
+    static Contract OptionAtBox();
 
-  static Contract FuturesOnOptions();
+    static Contract OptionWithTradingClass();
 
-  static Contract ByISIN();
+    static Contract OptionWithLocalSymbol();
 
-  static Contract ByConId();
+    static Contract DutchWarrant();
 
-  static Contract OptionForQuery();
+    static Contract SimpleFuture();
 
-  static Contract StockComboContract();
+    static Contract FutureWithLocalSymbol();
 
-  static Contract FutureComboContract();
+    static Contract FutureWithMultiplier();
 
-  static Contract SmartFutureComboContract();
+    static Contract WrongContract();
 
-  static Contract OptionComboContract();
+    static Contract FuturesOnOptions();
 
-  static Contract InterCmdtyFuturesContract();
+    static Contract ByISIN();
 
-  static Contract NewsFeedForQuery();
+    static Contract ByConId();
 
-  static Contract BTbroadtapeNewsFeed();
+    static Contract OptionForQuery();
 
-  static Contract BZbroadtapeNewsFeed();
+    static Contract StockComboContract();
 
-  static Contract FLYbroadtapeNewsFeed();
+    static Contract FutureComboContract();
 
-  // static Contract MTbroadtapeNewsFeed();
-  static Contract ContFut();
+    static Contract SmartFutureComboContract();
 
-  static Contract ContAndExpiringFut();
+    static Contract OptionComboContract();
 
-  static Contract JefferiesContract();
+    static Contract InterCmdtyFuturesContract();
 
-  static Contract CSFBContract();
+    static Contract NewsFeedForQuery();
 
-  static Contract Warrants();
+    static Contract BTbroadtapeNewsFeed();
 
-  static Contract IBKRATSContract();
+    static Contract BZbroadtapeNewsFeed();
 
-  static Contract CryptoContract();
+    static Contract FLYbroadtapeNewsFeed();
 
-  static Contract StockWithIPOPrice();
+    // static Contract MTbroadtapeNewsFeed();
+    static Contract ContFut();
 
-  static Contract ByFIGI();
+    static Contract ContAndExpiringFut();
 
-  static Contract ByIssuerId();
+    static Contract JefferiesContract();
 
-  static Contract Fund();
+    static Contract CSFBContract();
+
+    static Contract Warrants();
+
+    static Contract IBKRATSContract();
+
+    static Contract CryptoContract();
+
+    static Contract StockWithIPOPrice();
+
+    static Contract ByFIGI();
+
+    static Contract ByIssuerId();
+
+    static Contract Fund();
 };
 
 #endif

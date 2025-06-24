@@ -107,6 +107,15 @@ Contract ContractSamples::CNStkDongfangPrecision() {
   return contract;
 }
 
+Contract ContractSamples::JPStkToyota() {
+  Contract contract;
+  contract.symbol = "7203";
+  contract.secType = "STK";
+  contract.currency = "JPY";
+  contract.exchange = "SMART";
+  return contract;
+}
+
 Contract ContractSamples::TWStkTsmc() {
   Contract contract;
   contract.symbol = "2330";
@@ -127,6 +136,35 @@ Contract ContractSamples::EurGbpFx() {
   return contract;
 }
 
+Contract ContractSamples::FxUsdHkd() {
+  Contract contract;
+  contract.symbol = "USD";
+  contract.description = "USD.HKD";
+  contract.secType = "CASH";
+  contract.currency = "HKD";
+  contract.exchange = "IDEALPRO";
+  return contract;
+}
+
+Contract ContractSamples::FxUsdCnh() {
+  Contract contract;
+  contract.symbol = "USD";
+  contract.description = "USD.CNY";
+  contract.secType = "CASH";
+  contract.currency = "CNH";
+  contract.exchange = "IDEALPRO";
+  return contract;
+}
+
+Contract ContractSamples::FxEurUsd() {
+  Contract contract;
+  contract.symbol = "EUR";
+  contract.secType = "CFD";
+  contract.currency = "USD";
+  contract.exchange = "IDEALPRO";
+  return contract;
+}
+
 Contract ContractSamples::Index() {
   //! [indcontract]
   Contract contract;
@@ -135,6 +173,24 @@ Contract ContractSamples::Index() {
   contract.currency = "EUR";
   contract.exchange = "EUREX";
   //! [indcontract]
+  return contract;
+}
+
+Contract ContractSamples::IndexHsi() {
+  Contract contract;
+  contract.symbol = "HSI";
+  contract.secType = "IND";
+  contract.currency = "HKD";
+  contract.exchange = "HKFE";
+  return contract;
+}
+
+Contract ContractSamples::IndexN225() {
+  Contract contract;
+  contract.symbol = "N225";
+  contract.secType = "IND";
+  contract.currency = "JPY";
+  contract.exchange = "OSE.JPN";
   return contract;
 }
 
@@ -246,6 +302,7 @@ Contract ContractSamples::UsEtfQqq() {
   //! [etfcontract]
   return contract;
 }
+
 Contract ContractSamples::UsEtfEzoo() {
   Contract contract;
   contract.symbol = "EZOO";
@@ -765,7 +822,7 @@ Contract ContractSamples::JefferiesContract() {
   contract.symbol = "AAPL";
   contract.secType = "STK";
   contract.exchange = "JEFFALGO"; // must be direct-routed to JEFALGO
-  contract.currency = "USD";      // only available for US stocks
+  contract.currency = "USD"; // only available for US stocks
   //! [jefferies_contract]
   return contract;
 }

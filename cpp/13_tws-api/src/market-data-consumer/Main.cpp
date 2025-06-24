@@ -31,7 +31,9 @@ int main(int argc, char **argv) {
   int clientId = 0;
 
   unsigned attempt = 0;
-  printf("Start of C++ Socket Client Test %u\n", attempt);
+  spdlog::set_pattern("%Y-%m-%dT%T.%f%z | %^%8l%$ | %20! | %v");
+  //spdlog::set_pattern("[source %s] [function %!] [line %#] %v");
+  SPDLOG_INFO("Start of C++ Socket Client Test %u\n", attempt);
 
   for (;;) {
     ++attempt;
@@ -52,35 +54,34 @@ int main(int argc, char **argv) {
 
     // Set market data type to DELAYED (3)
     client.m_pClient->reqMarketDataType(3);
-    Contract btc;
-    btc.symbol = "BTC";
-    btc.secType = "CRYPTO";
-    btc.exchange = "OSL";
-    btc.currency = "USD";
-    Contract eth;
-    eth.symbol = "ETH";
-    eth.secType = "CRYPTO";
-    eth.exchange = "OSL";
-    eth.currency = "USD";
-    int reqId = 0;
-    // https://www.interactivebrokers.com/campus/ibkr-api-page/twsapi-doc/#request-tick-data
-    // client.m_pClient->reqTickByTickData(1, btc, "BidAsk", 10, false);
-    // client.m_pClient->reqTickByTickData(2, eth, "MidPoint", 10, false);
+    client.m_subscribedContracts.push_back(ContractSamples::CryptoContract());
+    client.m_subscribedContracts.push_back(ContractSamples::FxUsdHkd());
+    client.m_subscribedContracts.push_back(ContractSamples::FxUsdCnh());
+    for (int i = 0; i < client.m_subscribedContracts.size(); ++i) {
+      spdlog::info("reqTickByTickData(): {} (id: {})",
+                   client.m_subscribedContracts[i].symbol, i);
+      client.m_pClient->reqTickByTickData(i, client.m_subscribedContracts[i], "MidPoint", 10, false);
+    }
+    const auto offset = client.m_subscribedContracts.size();
     client.m_subscribedContracts.push_back(ContractSamples::HKStk0005());
     client.m_subscribedContracts.push_back(ContractSamples::HKStk3011());
+    client.m_subscribedContracts.push_back(ContractSamples::IndexHsi());
+    client.m_subscribedContracts.push_back(ContractSamples::IndexN225());
     client.m_subscribedContracts.push_back(ContractSamples::TWStkTsmc());
     client.m_subscribedContracts.push_back(ContractSamples::CNStkPingAn());
     client.m_subscribedContracts.push_back(
-        ContractSamples::CNStkWesternMining());
+      ContractSamples::CNStkWesternMining());
     client.m_subscribedContracts.push_back(
-        ContractSamples::CNStkDongfangPrecision());
+      ContractSamples::CNStkDongfangPrecision());
+    client.m_subscribedContracts.push_back(
+      ContractSamples::JPStkToyota());
     client.m_subscribedContracts.push_back(ContractSamples::EUStkAsml());
     client.m_subscribedContracts.push_back(ContractSamples::UKStkVod());
     client.m_subscribedContracts.push_back(ContractSamples::UsStkNvda());
     client.m_subscribedContracts.push_back(ContractSamples::UsEtfQqq());
     client.m_subscribedContracts.push_back(ContractSamples::UsEtfBoxx());
     client.m_subscribedContracts.push_back(ContractSamples::UsEtfEzoo());
-    for (int i = 0; i < client.m_subscribedContracts.size(); ++i) {
+    for (auto i = offset; i < client.m_subscribedContracts.size(); ++i) {
       spdlog::info("Requesting market data for contract: {} (id: {})",
                    client.m_subscribedContracts[i].symbol, i);
       client.m_pClient->reqMktData(i, client.m_subscribedContracts[i], "",
