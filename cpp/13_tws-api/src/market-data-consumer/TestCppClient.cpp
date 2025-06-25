@@ -44,6 +44,11 @@ TestCppClient::~TestCppClient() {
     delete m_pClient;
 }
 
+std::string TestCppClient::getUserFriendlySymbol(const Contract &con) {
+    return std::format("{:18}", std::format("{:7} ({})", !con.description.empty() ? con.description : con.symbol,
+                                            con.exchange));
+}
+
 bool TestCppClient::connect(const char *host, int port, int clientId) {
     // trying to connect
     printf("Connecting to %s:%d clientId:%d\n",
@@ -745,14 +750,19 @@ void TestCppClient::currentTime(long time) {
 //! [error]
 void TestCppClient::error(int id, int errorCode, const std::string &errorString,
                           const std::string &advancedOrderRejectJson) {
-    if (id == -1) {
-        SPDLOG_INFO("Code: {}, Msg: {}", id, errorString);
+    if (id == -1 && (errorCode == 2104 || errorCode == 2106 || errorCode == 2158)) {
+        SPDLOG_INFO("Code: {}, Msg: {}", errorCode, errorString);
     } else if (!advancedOrderRejectJson.empty()) {
         printf("Error. Id: %d, Code: %d, Msg: %s, AdvancedOrderRejectJson: "
                "%s\n",
                id, errorCode, errorString.c_str(), advancedOrderRejectJson.c_str());
+    } else if (errorCode == 10167) {
+        // About no real-time market data, only delayed market data
+        SPDLOG_WARN("Symbol: {}, Code: {}, Msg: {}", getUserFriendlySymbol(m_subscribedContracts[id]), errorCode,
+                    errorString);
     } else {
-        SPDLOG_ERROR("Id: {}, Code: {}, Msg: {}", id, errorCode, errorString);
+        SPDLOG_ERROR("Symbol: {}, Code: {}, Msg: {}", getUserFriendlySymbol(m_subscribedContracts[id]), errorCode,
+                     errorString);
     }
 }
 
@@ -1233,7 +1243,8 @@ void TestCppClient::tickSnapshotEnd(int reqId) {
 
 void TestCppClient::marketDataType(TickerId reqId, int marketDataType) {
     if (marketDataType != 1 && reqId >= 0)
-        SPDLOG_WARN("Symbol: {}, MarketDataType: {}", m_subscribedContracts[reqId].symbol, marketDataType);
+        SPDLOG_WARN("Symbol: {}, MarketDataType: {}", getUserFriendlySymbol(m_subscribedContracts[reqId]),
+                marketDataType);
 }
 
 //! [commissionreport]
@@ -1738,11 +1749,8 @@ void TestCppClient::tickByTickMidPoint(int reqId, const time_t time,
     localtime_r(&time, &tm);
     std::ostringstream oss;
     oss << std::put_time(&tm, "%Y-%m-%dT%H:%M:%S%z");
-    SPDLOG_INFO("Symbol: {:18}, Time: {}, MidPoint: {}",
-                std::format("{:7} ({})", !m_subscribedContracts[reqId].description.empty() ? m_subscribedContracts[reqId
-                    ].description :
-                    m_subscribedContracts[reqId].symbol,
-                    m_subscribedContracts[reqId].exchange)
+    SPDLOG_INFO("Symbol: {}, Time: {}, MidPoint: {}",
+                getUserFriendlySymbol(m_subscribedContracts[reqId])
                 , oss.str(), Utils::doubleMaxString(midPoint));
 }
 
