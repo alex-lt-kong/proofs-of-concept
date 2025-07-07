@@ -1,0 +1,14 @@
+{
+  "name": "eth-poc",
+  "version": "1.0.0",
+  "description": "Ethereum proof of concepts",
+  "main": "sendMessage.js",
+  "scripts": {
+    "start": "node sendMessage.js"
+  },
+  "type": "module",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "ethers": "^6.10.0"
+  }
+}
